@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27428.2043
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AlfaGTKITTPixels2.0", "AlfaGTKITTPixels2.0\AlfaGTKITTPixels2.0.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ESP8266", "..\..\..\Dropbox\_DUINO_REPO\My Examples\131700836110170724\ESP8266\ESP8266.vcxproj", "{88AC4AF8-4972-44A2-BB62-BEF50EEC4FCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -15,6 +17,10 @@ Global
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
+		{88AC4AF8-4972-44A2-BB62-BEF50EEC4FCD}.Debug|x86.ActiveCfg = Debug|Win32
+		{88AC4AF8-4972-44A2-BB62-BEF50EEC4FCD}.Debug|x86.Build.0 = Debug|Win32
+		{88AC4AF8-4972-44A2-BB62-BEF50EEC4FCD}.Release|x86.ActiveCfg = Release|Win32
+		{88AC4AF8-4972-44A2-BB62-BEF50EEC4FCD}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
