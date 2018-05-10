@@ -1,118 +1,77 @@
 /**
 * NEOPIXEL KITT BETA - PRODUCTION
-* v4.1 - aREST implementation
-*  JSON added
+*
 * **/
-
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
 #include <ESP8266WiFi.h>
-#include <ESP8266HTTPClient.h>
-#include <ArduinoJson.h>
 #include <WiFiClient.h>
-#include <aREST.h>
+#include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-#include <ESP8266WebServer.h>
 
-// Create aREST instance
-aREST rest = aREST();
-#define LISTEN_PORT           80
-WiFiServer restserver(LISTEN_PORT);
 #define PIN 4
 #define NUMPIXELS 16
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-int delayval = 500;
+uint8_t delayval = 500;
+boolean secondRun = false;
 WiFiClient wiFi;
 MDNSResponder mdns;
 
-const char* mode = "kitt";
-int speed = 25;
-int cycles = 5;
-int width = 4;
-int red = 200;
-int blue = 0;
-int green = 0;
-
-int watsdoin = 1;
+uint8_t watsdoin;
 const char ssid[] = "Northern Frontier Interwebs";
 const char pass[] = "num4jkha8nnk";
 const char ssid3[] = "AlfaRomeoGT";
 const char pass3[] = "turismoGT";
-bool firstRun, secondRun, off = false;
-int stdDelaySec = 0;
+boolean firstRun = false;
+long stdDelaySec = 0;
 const char ssid2[] = "AndroidAP";
 const char pass2[] = "tttttttt";
 ESP8266WebServer server(80);
-long theTime, lastTime1 = 0;
-
-int pixControl(String command) {
-	// Get state from command
-	int state = command.toInt();
-	watsdoin = state;
-	return 1;
-}
-
-int pixControl(String command);
+boolean off = false;
+long theTime, lastTime2, lastTime1 = 0;
 
 void handleRoot() {
 	String html = "<!DOCTYPE html><html><head><title>AlfaRomeoGT</title><script src=\"https://www.w3schools.com/lib/w3color.js\"></script><style src=\"https://trendypublishing.com/tsmartpad/css/style.css\"></style><script src=\"https://trendypublishing.com/tsmartpad/js/colour.js\"></script></head><div class=\"w3-col l4 m12\" style=\"text-align:center;\"><h1>AlfaRomeoGT Neopixel</h1><p>Uptime: ";
 	html += String(millis());
 	html += "</p><br><h4>KITT IS CURRENTLY ";
-	if (off == 1) {
-		html += "OFF";
-	}
-	else if (off == 0) {
-		html += "ON";
-	}
-	html += "<br><p>StdDelay: ";
-	html += stdDelaySec;
-	html += " secs</p><br><table><tr><th>SPECIAL MODES</th><th>SOLID COLOURS</th><th>DELAY TIME</th><tr><td><a href=\"0\">OFF</a></td></tr><tr><td><a href=\"1\">1 STD MODE</a></td><td><a href=\"2\">2 - GREEN</a></td><td><a href=\"3\">3 - 10 sec delay</a></td></tr><tr><td><a href=\"4\">4 - COP MODE</a></td><td><a href=\"5\">5 - YELLOW</a></td><td><a href=\"6\">6 - 30 sec delay</a></td></tr><tr><td><a href=\"7\">7 - RAINBOW</a></td><td><a href=\"8\">8 - BLUE</a></td><td><a href=\"9\">9 - 60 sec delay</a></td></tr></table></body></html>";
-
-	server.send(200, "text/html", html);
-}
-
-void handleRootCmd(int cmd) {
-	watsdoin = cmd;
-	String html = "<!DOCTYPE html><html><head><title>AlfaRomeoGT</title></head><div class=\"w3-col l4 m12\" style=\"text-align:center;\"><h1>AlfaRomeoGT Neopixel</h1><p>Uptime: ";
-	html += String(millis());
-	html += "<h4>COMMAND ACCEPTED...";
-	html += cmd; html += "</p><br><h4>KITT IS CURRENTLY ";
 	if (off) {
 		html += "OFF";
-	}
-	else {
+	}	else {
 		html += "ON";
 	}
 	html += "<br><p>StdDelay: ";
 	html += stdDelaySec;
 	html += " secs</p><br><table><tr><th>SPECIAL MODES</th><th>SOLID COLOURS</th><th>DELAY TIME</th><tr><td><a href=\"0\">OFF</a></td></tr><tr><td><a href=\"1\">1 STD MODE</a></td><td><a href=\"2\">2 - GREEN</a></td><td><a href=\"3\">3 - 10 sec delay</a></td></tr><tr><td><a href=\"4\">4 - COP MODE</a></td><td><a href=\"5\">5 - YELLOW</a></td><td><a href=\"6\">6 - 30 sec delay</a></td></tr><tr><td><a href=\"7\">7 - RAINBOW</a></td><td><a href=\"8\">8 - BLUE</a></td><td><a href=\"9\">9 - 60 sec delay</a></td></tr></table></body></html>";
 	server.send(200, "text/html", html);
-	delay(200);
 }
 
-void serialise() {
-	const size_t bufferSize = JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(6) + 200;
-	DynamicJsonBuffer jsonBuffer(bufferSize);
-	JsonObject& root = jsonBuffer.createObject();
-	root["off"] = false;
-	root["mode"] = "cop";
-	root["speed"] = 25;
-	root["cycles"] = 5;
-	root["width"] = 3;
+void handleRootCmd(uint8_t cmd) {
+	watsdoin = cmd;
+	setCmd(cmd, false);
+	long next = (millis() - (lastTime1 + (stdDelaySec * 1000)));
+	long nextS = (next/1000);
+	String html = "<!DOCTYPE html><html><head><title>AlfaRomeoGT</title></head><h1>AlfaRomeoGT</h1><p>Uptime: ";
+	html += String(millis());
+	html += "<h4>COMMAND ACCEPTED...Response is:";
+  html += cmd; 
+	html += "</p><br><h4>KITT IS CURRENTLY ";
+	if (off) {
+		html += "OFF";
+	}	else {
+		html += "ON";
+	}
+	html += "<br><p>StdDelay: ";
+	html += stdDelaySec;
+	html += "secs.</p><p>Next Pixel Run in ";
+	html += nextS;
+	html += "secs.</p><br><table><tr><th>SPECIAL MODES</th><th>SOLID COLOURS</th><th>DELAY TIME</th><tr><td><a href=\"0\">OFF</a></td></tr><tr><td><a href=\"1\">1 STD MODE</a></td><td><a href=\"2\">2 - GREEN</a></td><td><a href=\"3\">3 - 10 sec delay</a></td></tr><tr><td><a href=\"4\">4 - COP MODE</a></td><td><a href=\"5\">5 - YELLOW</a></td><td><a href=\"6\">6 - 30 sec delay</a></td></tr><tr><td><a href=\"7\">7 - RAINBOW</a></td><td><a href=\"8\">8 - BLUE</a></td><td><a href=\"9\">9 - 60 sec delay</a></td></tr></table></body></html>";
+	server.send(200, "text/html", html);
+	}
 
-	JsonArray& colour = root.createNestedArray("colour");
-	colour.add(200);
-	colour.add(200);
-	colour.add(0);
-
-	root.printTo(Serial);
-
-
-}
 void handleNotFound() {
 	String message = "File Not Found\n\n";
 	message += "URI: ";
@@ -195,76 +154,58 @@ void kitt() {
 	delay(2000);
 }
 
-void rainBow()
-{
+void rainBow(){
 	for (byte j = 0; j<252; j += 7) {
 		knightRider(1, 16, 2, colorWheel(j)); // Cycles, Speed, Width, RGB Color
 	}
 	clearStrip();
 }
 
-void setLights() {
-	String Smode = String(mode);
-	if (!off) { // false
-		if (Smode == "cop") {
-			watsdoin = 4;
-		} else if (Smode == "solid") {
-			watsdoin = 2;
-		} else if (Smode == "rainbow") {
-			watsdoin = 7;
-		} else if (Smode == "kitt") {
-			watsdoin = 1;
+void setCmd(uint8_t cmd, bool isit){
+	if (cmd==0){
+	  isit = true;
+	}else {
+watsdoin = cmd;
+}
+}
+void goLights(){  
+	switch (watsdoin){		// 1st column
+	case '1':	//  STANDARD KITT
+		knightRider(6, 26, 4, 0xFF1000); // (original orange-red)
+		break;
+	case '4':	// cop mode
+		for (uint8_t i = 0; i<NUMPIXELS; i + 2) {
+			strip.setPixelColor(i, strip.Color(170, 0, 0)); // RED
+			strip.setPixelColor(i + 1, strip.Color(0, 0, 170)); // BLUE EACH 2ND
+			strip.show(); // This sends the updated pixel color to the hardware.
+			delay(delayval); // Delay for a period of time (in milliseconds).
 		}
-		switch (watsdoin){
-			// 1st column
-			// MODES
-			case '1':
-				//  STANDARD KITT
-				knightRider(6, 26, 4, 0xFF1000); // (original orange-red)
-				break;
-			case '4':
-				// cop mode
-				for (int i = 0; i < NUMPIXELS; i + 2) {
-					strip.setPixelColor(i, strip.Color(170, 0, 0)); // RED
-					strip.setPixelColor(i + 1, strip.Color(0, 0, 170)); // BLUE EACH 2ND 
-					strip.show(); // This sends the updated pixel color to the hardware.
-					delay(delayval); // Delay for a period of time (in milliseconds).
-				}
-				for (int i = 0; i < NUMPIXELS; i + 2) {
-					strip.setPixelColor(i, strip.Color(0, 0, 170)); // RED
-					strip.setPixelColor(i + 1, strip.Color(170, 0, 0)); // BLUE EACH 2ND 
-					strip.show(); // This sends the updated pixel color to the hardware.
-					delay(delayval); // Delay for a period of time (in milliseconds).
-				}
-				break;
-			case '7':        rainBow();         break;
-
-				// 2ND COLUMN 
-			case '2':   knightRider(4, 26, 3, 0x00FF00); break;     // green
-			case '5': knightRider(4, 26, 3, 0xFFFF00); break;       // yellow
-			case '8': knightRider(1, 36, 3, 0x0000FF); break;     // blue                
-																  // 3rd column
-																  // delay timing changes
-			case '3': stdDelaySec = 10;   break;
-			case '6': stdDelaySec = 30;   break;
-			case '9': stdDelaySec = 60;   break;
-				// ON / OFF
-			case '0':   off = true; clearStrip();    break;
+		for (uint8_t i = 0; i<NUMPIXELS; i + 2) {
+			strip.setPixelColor(i, strip.Color(0, 0, 170)); // RED
+			strip.setPixelColor(i + 1, strip.Color(170, 0, 0)); // BLUE EACH 2ND
+			strip.show(); // This sends the updated pixel color to the hardware.
+			delay(delayval); // Delay for a period of time (in milliseconds).
 		}
+		break;
+	case '7':        rainBow();         break;
+		// 2ND COLUMN
+	case '2':   knightRider(4, 26, 3, 0x00FF00); break;     // green
+	case '5': knightRider(4, 26, 3, 0xFFFF00); break;       // yellow
+	case '8': knightRider(1, 36, 3, 0x0000FF); break;     // blue
+	 // 3rd column delay timing changes
+	case '3': stdDelaySec = 10;   break;
+	case '6': stdDelaySec = 30;   break;
+	case '9': stdDelaySec = 60;   break;
+		// ON / OFF
+	case '0':   off = true; clearStrip();    break;
 	}
 }
+
 void setup(void) {
 	Serial.begin(115200);
-	rest.variable("watsdoin", &watsdoin);
-	//rest.variable("colour",&colour);
-	rest.function("setLights", pixControl);
-	rest.set_id("1");
-	rest.set_name("turismoGT");
-
-	int n = WiFi.scanNetworks();
+	uint8_t n = WiFi.scanNetworks();
 	Serial.println("scan done");
-
-	for (int i = 0; i < n; ++i) {
+	for (uint8_t i = 0; i < n; ++i) {
 		String tryWi = WiFi.SSID(i);
 		if (tryWi == ssid) {
 			WiFi.begin(ssid, pass);
@@ -302,11 +243,6 @@ void setup(void) {
 		else if (error == OTA_END_ERROR) Serial.println("End Failed");
 	});
 	ArduinoOTA.begin();
-
-
-
-	restserver.begin();
-
 	server.on("/", handleRoot);
 	server.on("/0", []() {
 		handleRootCmd(0);
@@ -341,60 +277,33 @@ void setup(void) {
 	server.onNotFound(handleNotFound);
 	server.begin();
 	delay(500);
-
 	stdDelaySec = 10;
 	firstRun = true;
-	watsdoin = 1;
 	strip.begin();
 	strip.show();
 	Serial.println("ALFAPixels server started");
 	delay(500);
 	kitt();
-}
-
+ }
 
 void loop(void) {
+ 	ArduinoOTA.handle();
 	theTime = millis();
-	ArduinoOTA.handle();
-	if (firstRun == 1) {
-		setLights();
-		firstRun = false;
-		secondRun = true;
-		watsdoin = 3;
-	} if (secondRun == 1) {
-		setLights();
-		secondRun = false;
-
-	}
-	if (WiFi.status() == WL_CONNECTED) {
-		HTTPClient http;  //Object of class HTTPClient
-		http.begin("http://jsonplaceholder.typicode.com/users/1");
-		int httpCode = http.GET();
-		//Check the returning code                                                                  
-		if (httpCode > 0) {
-			// Get the request response payload
-			String payload = http.getString();
-			const size_t bufferSize = JSON_ARRAY_SIZE(3) + JSON_OBJECT_SIZE(6) + 200;
-			DynamicJsonBuffer jsonBuffer(bufferSize);
-			const char* json = "{\"off\":false,\"mode\":\"cop\",\"speed\":25,\"cycles\":5,\"width\":3,\"colour\":[200,200,0]}";
-			JsonObject& root = jsonBuffer.parseObject(json);
-			off = root["off"]; // false
-			mode = root["mode"]; // "cop"
-			speed = root["speed"]; // 25
-			cycles = root["cycles"]; // 5
-			width = root["width"]; // 3
-			JsonArray& colour = root["colour"];
-			red = colour[0]; // 200
-			green = colour[1]; // 200
-			blue = colour[2]; // 0
+	if (firstRun) {
+			setCmd(1, false);
+			firstRun = false;
+			secondRun = true;
+      delay(200);
+     	}
+		if (secondRun) {
+			setCmd(4, false);
+			secondRun = false;
 		}
-		http.end();   //Close connection
+		if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
+			//	knightRider(4, 36, 4, 0xFF1000); // (original orange-red)
+			//	knightRider(4, 24, 3, 0xFF1000); // (original orange-red)
+			goLights();
+			lastTime1 = theTime;
+			strip.clear();
+		}
 	}
-	WiFiClient restclient = restserver.available();
-	rest.handle(restclient);
-	server.handleClient();
-	if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
-		setLights();
-		strip.clear();
-	}
-}

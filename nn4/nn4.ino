@@ -208,48 +208,51 @@ void setLights() {
 	if (!off) { // false
 		if (Smode == "cop") {
 			watsdoin = 4;
-		} else if (Smode == "solid") {
+		}
+		else if (Smode == "solid") {
 			watsdoin = 2;
-		} else if (Smode == "rainbow") {
+		}
+		else if (Smode == "rainbow") {
 			watsdoin = 7;
-		} else if (Smode == "kitt") {
+		}
+		else if (Smode == "kitt") {
 			watsdoin = 1;
 		}
-		switch (watsdoin){
+		switch (watsdoin) {
 			// 1st column
 			// MODES
-			case '1':
-				//  STANDARD KITT
-				knightRider(6, 26, 4, 0xFF1000); // (original orange-red)
-				break;
-			case '4':
-				// cop mode
-				for (int i = 0; i < NUMPIXELS; i + 2) {
-					strip.setPixelColor(i, strip.Color(170, 0, 0)); // RED
-					strip.setPixelColor(i + 1, strip.Color(0, 0, 170)); // BLUE EACH 2ND 
-					strip.show(); // This sends the updated pixel color to the hardware.
-					delay(delayval); // Delay for a period of time (in milliseconds).
-				}
-				for (int i = 0; i < NUMPIXELS; i + 2) {
-					strip.setPixelColor(i, strip.Color(0, 0, 170)); // RED
-					strip.setPixelColor(i + 1, strip.Color(170, 0, 0)); // BLUE EACH 2ND 
-					strip.show(); // This sends the updated pixel color to the hardware.
-					delay(delayval); // Delay for a period of time (in milliseconds).
-				}
-				break;
-			case '7':        rainBow();         break;
+		case '1':
+			//  STANDARD KITT
+			knightRider(6, 26, 4, 0xFF1000); // (original orange-red)
+			break;
+		case '4':
+			// cop mode
+			for (int i = 0; i < NUMPIXELS; i + 2) {
+				strip.setPixelColor(i, strip.Color(170, 0, 0)); // RED
+				strip.setPixelColor(i + 1, strip.Color(0, 0, 170)); // BLUE EACH 2ND 
+				strip.show(); // This sends the updated pixel color to the hardware.
+				delay(delayval); // Delay for a period of time (in milliseconds).
+			}
+			for (int i = 0; i < NUMPIXELS; i + 2) {
+				strip.setPixelColor(i, strip.Color(0, 0, 170)); // RED
+				strip.setPixelColor(i + 1, strip.Color(170, 0, 0)); // BLUE EACH 2ND 
+				strip.show(); // This sends the updated pixel color to the hardware.
+				delay(delayval); // Delay for a period of time (in milliseconds).
+			}
+			break;
+		case '7':        rainBow();         break;
 
-				// 2ND COLUMN 
-			case '2':   knightRider(4, 26, 3, 0x00FF00); break;     // green
-			case '5': knightRider(4, 26, 3, 0xFFFF00); break;       // yellow
-			case '8': knightRider(1, 36, 3, 0x0000FF); break;     // blue                
-																  // 3rd column
-																  // delay timing changes
-			case '3': stdDelaySec = 10;   break;
-			case '6': stdDelaySec = 30;   break;
-			case '9': stdDelaySec = 60;   break;
-				// ON / OFF
-			case '0':   off = true; clearStrip();    break;
+			// 2ND COLUMN 
+		case '2':   knightRider(4, 26, 3, 0x00FF00); break;     // green
+		case '5': knightRider(4, 26, 3, 0xFFFF00); break;       // yellow
+		case '8': knightRider(1, 36, 3, 0x0000FF); break;     // blue                
+															  // 3rd column
+															  // delay timing changes
+		case '3': stdDelaySec = 10;   break;
+		case '6': stdDelaySec = 30;   break;
+		case '9': stdDelaySec = 60;   break;
+			// ON / OFF
+		case '0':   off = true; clearStrip();    break;
 		}
 	}
 }
@@ -389,12 +392,13 @@ void loop(void) {
 			blue = colour[2]; // 0
 		}
 		http.end();   //Close connection
-	}
-	WiFiClient restclient = restserver.available();
-	rest.handle(restclient);
-	server.handleClient();
-	if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
-		setLights();
-		strip.clear();
+
+		WiFiClient restclient = restserver.available();
+		rest.handle(restclient);
+		server.handleClient();
+		if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
+			setLights();
+			strip.clear();
+		}
 	}
 }
