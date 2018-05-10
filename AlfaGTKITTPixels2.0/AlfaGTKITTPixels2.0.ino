@@ -11,16 +11,12 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
-#include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
 // Create aREST instance
 aREST rest = aREST();
 #define LISTEN_PORT           80
-
-
-
 
 
 #define PIN 4
@@ -298,6 +294,7 @@ void loop(void) {
 	ArduinoOTA.handle();
 	theTime = millis();
 	server.handleClient();
+
 	if (!off) {
 		if (firstRun == 1) {
 			setLights(1);
