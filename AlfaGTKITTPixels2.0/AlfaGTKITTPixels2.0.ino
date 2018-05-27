@@ -1,7 +1,7 @@
 /**
 * NEOPIXEL KITT BETA - PRODUCTION
-* v6.1 - aREST implementation
-*  REST
+* v7.1 - espserver implementation
+*  espSERVER
 * **/
 
 #include <Adafruit_NeoPixel.h>
@@ -9,21 +9,21 @@
 #include <avr/power.h>
 #endif
 #include <ESP8266WiFi.h>
-#include <ESP8266WebServer.h>
 #include <ArduinoOTA.h>
-const char* serverIndex = "<form method='POST' action='/update' enctype='multipart/form-data'><input type='radio' name='mode' value='kitt' checked><input type='submit' value='Update'></form>";
 #include <WiFiClient.h>
+#include <ESP8266WebServer.h>
+#include <ESP8266mDNS.h>
 
-#define LISTEN_PORT           80
-ESP8266WebServer server(LISTEN_PORT);
+MDNSResponder mdns;
+ESP8266WebServer server(80);
 #define HOST_NAME "alfagt"
 #define PIN 4
 #define NUMPIXELS 16
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-int delayval = 50;
+int delayval = 25;
 
 String colour = "red";
-String modeS = "kitt";
+String mode = "kitt";
 int theSpeed = 25;
 int cycles = 5;
 int width = 4;
@@ -38,16 +38,48 @@ const char ssid2[] = "AndroidAP";
 const char pass2[] = "tttttttt";
 IPAddress subnet(255, 255, 255, 0);
 IPAddress gateway2(192,168,43,1);
-IPAddress ip2(10, 0, 77, 34);
-IPAddress gateway(192,168,43,1);
-IPAddress ip(192, 168, 43, 34);
+IPAddress ip(10, 0, 77, 34);
+IPAddress gateway(10,0,77,100);
+IPAddress ip2(192, 168, 43, 34);
 long theTime, lastTime1 = 0;
 bool firstRun, secondRun, off = false;
 
+const char INDEX_HTML[] =
+"<!DOCTYPE HTML>"
+"<html>"
+"<head>"
+"<meta name = \"viewport\" content = \"width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0\">"
+"<title>AlfaGT</title>"
+"<style>"
+"\"body { background-color: #808080; font-family: Arial, Helvetica, Sans-Serif; Color: #000000; }\""
+"</style>"
+"</head>"
+"<body>"
+"<h1>AlfaGT Command</h1>"
+"<FORM action=\"/\" method=\"post\">"
+"<P>"
+"Mode<br>"
+"<INPUT type=\"radio\" name=\"mode\" value=\"off\">Off<BR>"
+"<INPUT type=\"radio\" name=\"mode\" value=\"kitt\">KITT<BR>"
+"<INPUT type=\"radio\" name=\"mode\" value=\"cop\">CopMode<BR>"
+"<BR>Colour<BR>"
+"<INPUT type=\"radio\" name=\"mode\" value=\"yellow\">Yellow"
+"<INPUT type=\"radio\" name=\"mode\" value=\"blue\">Blue"
+"<INPUT type=\"radio\" name=\"mode\" value=\"green\">Green<BR>"
+"<INPUT type=\"submit\" value=\"Send\"> <INPUT type=\"reset\">"
+"</P>"
+"<P>"
+"Delay<br>"
+"<INPUT type=\"radio\" name=\"delay\" value=\"10\">10<BR>"
+"<INPUT type=\"radio\" name=\"delay\" value=\"30\">30<BR>"
+"<INPUT type=\"radio\" name=\"delay\" value=\"60\">60<BR>"
+"<INPUT type=\"submit\" value=\"Send\"> <INPUT type=\"reset\">"
+"</P>"
+"</FORM>"
+"</body>"
+"</html>";
 
-void setLights(int cmdr){
-watsdoin=cmdr;
-}
+const int LEDPIN = BUILTIN_LED;
 
  void knightRider(uint16_t cyc, uint16_t spd, uint16_t wid, uint32_t color) {
   uint32_t old_val[NUMPIXELS]; // up to 256 lights!
@@ -60,7 +92,7 @@ watsdoin=cmdr;
         strip.setPixelColor(x - 1, old_val[x - 1]);
       }
       strip.show();
-      delay(delayval);
+      delay(spd);
     }
     for (int count = NUMPIXELS - 1; count >= 0; count--) {
       strip.setPixelColor(count, color);
@@ -70,7 +102,7 @@ watsdoin=cmdr;
         strip.setPixelColor(x + 1, old_val[x + 1]);
       }
       strip.show();
-      delay(delayval);
+      delay(spd);
     }
   }
   clearStrip();
@@ -102,33 +134,46 @@ uint32_t colorWheel(byte WheelPos) {
   }
 }
 void kitt() {
-  knightRider(3, 12, 4, 0xFF1000); // Cycles, Speed, Width, RGB Color (original orange-red)
-  knightRider(3, 17, 3, 0xFF00FF); // Cycles, Speed, Width, RGB Color (purple)
-  knightRider(3, 22, 2, 0x0000FF); // Cycles, Speed, Width, RGB Color (blue)
-  knightRider(3, 27, 5, 0xFF0000); // Cycles, Speed, Width, RGB Color (red)
-  knightRider(3, 12, 6, 0x00FF00); // Cycles, Speed, Width, RGB Color (green)
-  knightRider(3, 12, 7, 0xFFFF00); // Cycles, Speed, Width, RGB Color (yellow)
-  knightRider(3, 12, 8, 0x00FFFF); // Cycles, Speed, Width, RGB Color (cyan)
-  knightRider(3, 12, 2, 0xFFFFFF); // Cycles, Speed, Width, RGB Color (white)
+  int t=30;
+  knightRider(2, t, 4, 0xFF1000); // Cycles, Speed, Width, RGB Color (original orange-red)
+  t=t-5;
+  knightRider(2, t, 3, 0xFF00FF); // Cycles, Speed, Width, RGB Color (purple)
+  t=t-5;
+  knightRider(2, t, 2, 0x0000FF); // Cycles, Speed, Width, RGB Color (blue)
+  t=t-5;
+  knightRider(2, t, 5, 0xFF0000); // Cycles, Speed, Width, RGB Color (red)
+  t=t-5;
+  knightRider(2, t, 4, 0x00FF00); // Cycles, Speed, Width, RGB Color (green)
+  t=t+5;
+  knightRider(2, t, 4, 0xFFFF00); // Cycles, Speed, Width, RGB Color (yellow)
+  t=t+5;
+  knightRider(2, t, 4, 0x00FFFF); // Cycles, Speed, Width, RGB Color (cyan)
+  t=t+5;
+  knightRider(2, t, 2, 0xFFFFFF); // Cycles, Speed, Width, RGB Color (white)
   clearStrip();
 }
 void copMode(){
   for (int cy=1;cy<=5;cy++){
   // set to 5 cycles...
-  for (int wide=3;wide<=16;wide++){
-  knightRider(1, 25, wide, 0xFF0000); // red
-  knightRider(1, 25, wide, 0x0000FF); // blue         
-  delay(200);
-  }
+  knightRider(1, 25, 4, 0xFF0000); // red
+  knightRider(1, 25, 4, 0x0000FF); // blue         
   }
 }
 void runThePix() {
   Serial.println("runnin pix");
-  if (watsdoin==1) {
-    knightRider(cycles, theSpeed, width, 0xFF1000); // (original orange-red)
+  if (watsdoin==0) {
+   Serial.println("off");
   } 
+  else if (watsdoin==1) {
+    knightRider(1, 18, 3, 0xFF1000); // (original orange-red)
+    knightRider(1, 20, 3, 0xFF1000); // (original orange-red)
+    knightRider(1, 22, 3, 0xFF1000); // (original orange-red)
+    knightRider(1, 25, 4, 0xFF1000); // (original orange-red)
+    knightRider(1, 30, 3, 0xFF1000); // (original orange-red)
+    knightRider(1, 35, 3, 0xFF1000); // (original orange-red)
+  }
   else if (watsdoin==7){
-    //rainbow();
+    kitt();     
     } 
   else if (watsdoin==4){
     copMode();
@@ -143,55 +188,78 @@ void runThePix() {
     knightRider(5, 25, 3, 0x0000FF);      // blue         
   }
 }
-String upCalc(unsigned long elapsed){
-float h,m,s,ms;
- unsigned long over;
-  h=int(elapsed/3600000);
-  over=elapsed%3600000;
-  m=int(over/60000);
-  over=over%60000;
-  s=int(over/1000);
-  ms=over%1000;
- String ret = String(h)+":"+String(m)+","+String(s)+"."+String(ms);
- return ret;
-}
 void handleRoot() {
-  String zeetime = upCalc(theTime);
-  String html = "<!DOCTYPE html><html><head><title>AlfaRomeoGT</title></head><div class=\"w3-col l4 m12\" style=\"text-align:center;\"><h1>AlfaRomeoGT Neopixel</h1><p>Uptime: ";
- html += zeetime;
- html += "</p><br><h4>KITT IS CURRENTLY ";
- if (off){  html += "OFF";
- }else{
-  html += "ON";
- }
- html += "<br><p>watsdoin: ";
- html += String(watsdoin);
- html += "</p><br><p>StdDelay: ";
- html += String(stdDelaySec);
- html += " secs</p><br><table><tr><th>SPECIAL MODES</th><th>SOLID COLOURS</th><th>DELAY TIME</th><tr><td><a href=\"0\">OFF</a></td></tr><tr><td><a href=\"1\">1 STD MODE</a></td><td><a href=\"2\">2 - GREEN</a></td><td><a href=\"3\">3 - 10 sec delay</a></td></tr><tr><td><a href=\"4\">4 - COP MODE</a></td><td><a href=\"5\">5 - YELLOW</a></td><td><a href=\"6\">6 - 30 sec delay</a></td></tr><tr><td><a href=\"7\">7 - RAINBOW</a></td><td><a href=\"8\">8 - BLUE</a></td><td><a href=\"9\">9 - 60 sec delay</a></td></tr></table></body></html>";
- server.send(200, "text/html", html);
- delay(200);
+  if (server.hasArg("mode")) {
+    handleMode();
+  }
+  if (server.hasArg("delay")) {
+    handleDelay();
+  }
+  else {
+    server.send(200, "text/html", INDEX_HTML);
+  }
 }
 
-void handleRootCmd(int cmd) {
-  Serial.println("hndl root cmd");
-  watsdoin=cmd;
-  String zeetime = upCalc(theTime);
- String html = "<!DOCTYPE html><html><head><title>AlfaRomeoGT</title></head><div class=\"w3-col l4 m12\" style=\"text-align:center;\"><h1>AlfaRomeoGT Neopixel</h1><p>Uptime: ";
-  html += zeetime;
- html += "</p><br><h4>KITT IS CURRENTLY ";
- if (off){  html += "OFF";
- }else{
-  html += "ON";
- }
- html += "<br><p>watsdoin: ";
- html += String(watsdoin);
- html += "</p><br><p>StdDelay: ";
- html += String(stdDelaySec);
- html += "</p><br><table><tr><th>SPECIAL MODES</th><th>SOLID COLOURS</th><th>DELAY TIME</th><tr><td><a href=\"0\">OFF</a></td></tr><tr><td><a href=\"1\">1 STD MODE</a></td><td><a href=\"2\">2 - GREEN</a></td><td><a href=\"3\">3 - 10 sec delay</a></td></tr><tr><td><a href=\"4\">4 - COP MODE</a></td><td><a href=\"5\">5 - YELLOW</a></td><td><a href=\"6\">6 - 30 sec delay</a></td></tr><tr><td><a href=\"7\">7 - RAINBOW</a></td><td><a href=\"8\">8 - BLUE</a></td><td><a href=\"9\">9 - 60 sec delay</a></td></tr></table></body></html>";
-  server.send(200, "text/html", html);
-   delay(200);
+void returnFail(String msg)
+{
+  server.sendHeader("Connection", "close");
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(500, "text/plain", msg + "\r\n");
+}
+
+void handleMode()
+{
+  String LEDvalue;
+  if (!server.hasArg("mode")) return returnFail("BAD ARGS");
+  LEDvalue = server.arg("mode");
+  if (LEDvalue == "kitt") {
+    watsdoin=1;
+    server.send(200, "text/html", INDEX_HTML);
   }
+  else if (LEDvalue == "cop") {
+    watsdoin=4;
+    server.send(200, "text/html", INDEX_HTML);
+  }
+  else if (LEDvalue == "blue") {
+    watsdoin=8;
+    server.send(200, "text/html", INDEX_HTML);
+  }
+  else if (LEDvalue == "yellow") {
+    watsdoin=2;
+    server.send(200, "text/html", INDEX_HTML);
+  }
+  else if (LEDvalue == "green") {
+    watsdoin=5;
+    server.send(200, "text/html", INDEX_HTML);
+  }
+} 
+void handleDelay(){
+    String LEDvalue;
+    if (!server.hasArg("delay")) return returnFail("BAD ARGS");
+    LEDvalue = server.arg("delay");
+  if (LEDvalue == "10") {
+    stdDelaySec=10;
+    server.send(200, "text/html", INDEX_HTML);
+  }
+  else if (LEDvalue == "30") {
+    stdDelaySec=30;
+    server.send(200, "text/html", INDEX_HTML);
+  }
+  else if (LEDvalue == "60") {
+    stdDelaySec=60;
+    server.send(200, "text/html", INDEX_HTML);
+  }
+  else {
+    returnFail("Bad mode value");
+  }
+}
+
+void returnOK()
+{
+  server.sendHeader("Connection", "close");
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", "OK\r\n");
+}
 
 void handleNotFound(){
   String message = "File Not Found\n\n";
@@ -255,77 +323,34 @@ void setup(void) {
   ArduinoOTA.begin();
   delay(200);
   server.on("/", handleRoot);
-  server.on("/0", [](){
-  setLights(0);
-  
-  });
-  server.on("/1", [](){
-  watsdoin=1;
-  handleRoot();
-  });
-  server.on("/2", [](){
-  handleRootCmd(2);
-  });
-  server.on("/3", [](){
-  handleRootCmd(3);
-  });
-  server.on("/4", [](){
-  watsdoin=4;
-  handleRootCmd(4);
-  });
-  server.on("/5", [](){
-  handleRootCmd(5);
-  });
-  server.on("/7", [](){
-  handleRootCmd(7);
-  });  
-  server.on("/6", [](){
-  watsdoin=6;
-  handleRootCmd(6);
-  });
-  server.on("/8", [](){
-  handleRootCmd(8);
-  });
-  server.on("/9", [](){
-  handleRootCmd(9);
-  });
-  server.on("/10", [](){watsdoin=10;handleRoot();
-  });
-  server.on("/11", [](){watsdoin=11;handleRoot();
-  });
+  server.on("/mode", handleMode);
+  server.on("/delay", handleDelay);
   server.onNotFound(handleNotFound);
   server.begin();
   delay(200);
   strip.begin();
   strip.show();
-  delay(200);
-  Serial.println("setup complete");
+  
+ Serial.print("Connect to http://alfagt.local or http://");
+  Serial.println(WiFi.localIP());
 }
 
 void loop(void) {
-  
   theTime = millis();
-  int diff = (theTime-lastTime1);
-  String diffs =upCalc(diff);
-  String theTimes =upCalc(theTime);
-  
-   Serial.print("timef");Serial.println(theTimes);
-  Serial.print("diff");Serial.println(diffs);
+  //int diff = (theTime-lastTime1);
+ // Serial.print("diff");Serial.println(diffs);
   ArduinoOTA.handle();
  server.handleClient();
 if (firstRun) {
-Serial.println("1");
+ firstRun = false;
 kitt();
-    firstRun = false;
-    secondRun = true;
-  } else {
+}
  if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
-    runThePix();
     Serial.println("wats =");
     Serial.println(watsdoin);
     lastTime1=theTime;
+    runThePix();
     strip.clear();
   }
-}
  yield();
 }
