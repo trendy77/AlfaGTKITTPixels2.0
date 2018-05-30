@@ -36,13 +36,16 @@ const char ssid3[] = "AlfaRomeoGT";
 const char pass3[] = "turismoGT";
 const char ssid2[] = "AndroidAP";
 const char pass2[] = "tttttttt";
-IPAddress subnet(255, 255, 255, 0);
+const char *ssAPid = "AlfaRomeoKITTGT";
+const char *passAP = "turismo";
+/*IPAddress subnet(255, 255, 255, 0);
 IPAddress gateway2(192,168,43,1);
 IPAddress ip(10, 0, 77, 34);
 IPAddress gateway(10,0,77,100);
 IPAddress ip2(192, 168, 43, 34);
+*/
 long theTime, lastTime1 = 0;
-bool firstRun, secondRun, off = false;
+bool firstRun, secondRun,justRanPix, off = false;
 
 const char INDEX_HTML[] =
 "<!DOCTYPE HTML>"
@@ -278,26 +281,43 @@ void handleNotFound(){
 
 void setup(void) {
   Serial.begin(115200);
+  Serial.println("STARTING");
   stdDelaySec = 30;
   firstRun = true;
   watsdoin = 1;
   String hostname(HOST_NAME);
   WiFi.hostname(hostname);
+  long fromNow=millis();
+  long waitin=0;
  int n = WiFi.scanNetworks();
- for (int i = 0; i < n; ++i) {
-   String tryWi = WiFi.SSID(i);
-   if (tryWi == ssid) {
-  WiFi.config(ip,gateway,subnet);
-  WiFi.begin(ssid, pass);
-   } else if (tryWi == ssid2) {
-  WiFi.config(ip2,gateway2,subnet);
-  WiFi.begin(ssid2, pass2);
-  } else if (tryWi == ssid3) {
- WiFi.config(ip2,gateway2,subnet);
+ for (int i = 0; i < n; ++i){
+ String tryWi = WiFi.SSID(i);
+ //long timeZat = millis();
+ //waitin=timeZat-fromNow;
+ if (tryWi == ssid) {
+//  WiFi.config(ip,gateway,subnet);
+ Serial.println("CONNECTED TO NTHRN INTERWEBS");
+ WiFi.begin(ssid, pass);
+  } else if (tryWi == ssid2) {
+ Serial.println("CONNECTED TO ANDROIDAP");// WiFi.config(ip2,gateway2,subnet);
+ WiFi.begin(ssid2, pass2);
+ } else if (tryWi == ssid3) {
+ Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
  WiFi.begin(ssid3, pass3);
    }
+  else{
+  delay(1);
+  int t=1;
+  t++;
+  if(t>=15){
+    WiFi.softAP(ssAPid, passAP);
+ IPAddress myIP = WiFi.softAPIP();
+  Serial.print("NO NETWORKS FOUND. COMMENCING AP MODE @");
+  Serial.println(myIP);
+ }
   }
-  ArduinoOTA.setHostname("alfagt");
+}
+ ArduinoOTA.setHostname("alfagt");
   ArduinoOTA.onStart([]() {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH)
@@ -330,27 +350,30 @@ void setup(void) {
   delay(200);
   strip.begin();
   strip.show();
-  
- Serial.print("Connect to http://alfagt.local or http://");
-  Serial.println(WiFi.localIP());
+  Serial.print("Connect to http://alfagt.local or http://");
+  Serial.println(String(WiFi.localIP()));
 }
 
 void loop(void) {
   theTime = millis();
-  //int diff = (theTime-lastTime1);
- // Serial.print("diff");Serial.println(diffs);
   ArduinoOTA.handle();
  server.handleClient();
 if (firstRun) {
  firstRun = false;
 kitt();
 }
- if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
-    Serial.println("wats =");
+ if (justRanPix){
+    justRanPix=false;
+    Serial.print("wats =");
     Serial.println(watsdoin);
+    Serial.print("mode =");
+    Serial.println(mode);
+   }
+ if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
     lastTime1=theTime;
     runThePix();
     strip.clear();
+    justRanPix=true;
   }
  yield();
 }
