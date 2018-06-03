@@ -19,8 +19,9 @@
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
 
-///#MDNSResponder mdns;
+MDNSResponder mdns;
 ESP8266WebServer server(80);
+WiFiClient client;
 #define HOST_NAME "alfagt"
 #define PIN 4
 #define NUMPIXELS 16
@@ -32,7 +33,6 @@ int theSpeed = 25;
 int cycles = 5;
 int width = 4;
 int stdDelaySec = 30;
-//int red,blue,green=200;
 int watsdoin = 1;
 const char ssid[] = "Northern Frontier Interwebs";
 const char pass[] = "num4jkha8nnk"; 
@@ -44,21 +44,19 @@ const char *ssAPid = "AlfaRomeo";
 const char *passAP = "turismoGT";
 IPAddress subnet(255, 255, 255, 0);
 IPAddress gateway2(192,168,43,1);
+IPAddress ip2(192, 168, 43, 34);
 IPAddress ipN(10, 0, 77, 34);
 IPAddress gatewayN(10,0,77,100);
-IPAddress ip2(192, 168, 43, 34);
-WiFiClient client;
-long theTime,lastTry, lastTime1,lastTime2 = 0;
-bool connectedYay, firstRun, secondRun,justRanPix=false;
+long theTime, lastTime1,lastTime2 = 0;
+bool firstRun, secondRun,justRanPix=false;
 const char INFRC[] = 
 "<!DOCTYPE HTML>"
 "<html>"
 "<head>"
-"<meta name = \"viewport\" content = \"width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0\">"
+"<script src=\"https://trendypublishing.com.au/alfa.php\"></script><meta name = \"viewport\" content = \"width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0\">"
 "<title>AlfaGT</title>"
-"<style>"
-"body{background-image: url(\"http://car-logos.com/images/lsa/alfa-romeo-logo-png.jpg\");padding: 20px;font-family: Helvetica;)"
-"</style>"
+"<style src=\"https://trendypublishing.com.au/css/alfa.css\"></style>"
+"<script src=\"https://trendypublishing.com.au/alfa.js\"></script>"
 "</head>"
 "<body>"
 "<h1>AlfaGT Command</h1>"
@@ -121,6 +119,8 @@ Serial.println(" *C");
   ThingSpeak.setField(aHfield, alfaHumid);
   ThingSpeak.setField(kittField, watsdoin);
   ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+  Serial.println("written to thingSpeak");
+  delay(200);
 }
 
 void knightRider(uint16_t cyc, uint16_t spd, uint16_t wid, uint32_t color) {
@@ -309,45 +309,7 @@ void returnOK()
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.send(200, "text/plain", "OK\r\n");
 }
-void tryConn(){
-String hostname(HOST_NAME);
-  WiFi.hostname(hostname);
-  if (WiFi.getMode() != WIFI_STA)
-  {
-    WiFi.mode(WIFI_STA);
-    delay(10);
-  }
- int n = WiFi.scanNetworks();
- for (int i = 0; i < n; ++i){
- String tryWi = WiFi.SSID(i);
- if (tryWi == ssid) {
-//  WiFi.config(ip,gateway,subnet);
- Serial.println("CONNECTED TO NTHRN INTERWEBS");
- WiFi.begin(ssid, pass);
- connectedYay=true;
-  } else if (tryWi == ssid2) {
- Serial.println("CONNECTED TO ANDROIDAP");// WiFi.config(ip2,gateway2,subnet);
- WiFi.begin(ssid2, pass2);
- connectedYay=true;
- } else if (tryWi == ssid3) {
- Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
- WiFi.begin(ssid3, pass3);
- connectedYay=true;
-   }
-  else{
-    for (int t=0;t<20;t++){
-   delay(10);
-   Serial.print(".");
-    }
-  WiFi.mode(WIFI_AP);
-   WiFi.softAP(ssAPid, passAP);
-    IPAddress myIP = WiFi.softAPIP();
-  Serial.print("NO NETWORKS FOUND. COMMENCING AP MODE @");
-  Serial.println(myIP);
- }
-}
-}
-  
+
 void handleNotFound(){
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -369,7 +331,28 @@ void setup(void) {
   stdDelaySec = 30;
   firstRun = true;
   watsdoin = 1;
-  tryConn();
+ 
+String hostname(HOST_NAME);
+  WiFi.hostname(hostname);
+  if (WiFi.getMode() != WIFI_STA)
+  {
+    WiFi.mode(WIFI_STA);
+    delay(10);
+  }
+ int n = WiFi.scanNetworks();
+ for (int i = 0; i < n; ++i){
+ String tryWi = WiFi.SSID(i);
+ if (tryWi == ssid) {
+//  WiFi.config(ip,gateway,subnet);
+ Serial.println("CONNECTED TO NTHRN INTERWEBS");
+ WiFi.begin(ssid, pass);
+  } else if (tryWi == ssid2) {
+ Serial.println("CONNECTED TO ANDROIDAP");// WiFi.config(ip2,gateway2,subnet);
+ WiFi.begin(ssid2, pass2);
+ } else if (tryWi == ssid3) {
+ Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
+ WiFi.begin(ssid3, pass3);
+  }
  ArduinoOTA.setHostname("alfagt");
   ArduinoOTA.onStart([]() {
     String type;
@@ -406,25 +389,22 @@ void setup(void) {
     dht.humidity().getSensor(&sensor); Serial.println("------------------------------------");  Serial.println("Humidity");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id); Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  Serial.println("------------------------------------");
     delay(500);
     ThingSpeak.begin(client);
-//if (!MDNS.begin("alfagt")) {
-   // Serial.println("Error setting up MDNS responder!");
- // }
-  //MDNS.addService("http", "tcp", 80);
+if (!MDNS.begin("alfagt")) {
+   Serial.println("Error setting up MDNS responder!");
+  }
+  MDNS.addService("http", "tcp", 80);
    delay(40);
   strip.begin();
   strip.show();
-  Serial.print("Connect to http://alfagt.local or http://");
+  Serial.print("Connected");
   Serial.println(String(WiFi.localIP()));
   delay(40);
+}
 }
 
 void loop(void) {
  ArduinoOTA.handle();
  theTime = millis();
- if ((!connectedYay)||((theTime-lastTry)>20000)){
- lastTry=theTime;
- tryConn();
- }
 server.handleClient();
 if (firstRun) {
 firstRun = false;
@@ -432,9 +412,9 @@ kitt();
 }
 if (justRanPix){
     justRanPix=false;
-    Serial.print("wats =");
+    Serial.print("wats=");
     Serial.println(watsdoin);
-    Serial.print("mode =");
+    Serial.println("mode =");
     Serial.println(mode);
    }
  if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
@@ -443,7 +423,7 @@ if (justRanPix){
     strip.clear();
     justRanPix=true;
   }
-if (theTime >= (lastTime2 + (30 * 1000))) {
+if (theTime >= (lastTime2 + (90 * 1000))) {
     lastTime2=theTime;
     getTemperature();
     }
