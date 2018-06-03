@@ -48,8 +48,8 @@ IPAddress ipN(10, 0, 77, 34);
 IPAddress gatewayN(10,0,77,100);
 IPAddress ip2(192, 168, 43, 34);
 WiFiClient client;
-long theTime, lastTime1,lastTime2 = 0;
-bool firstRun, secondRun,justRanPix=false;
+long theTime,lastTry, lastTime1,lastTime2 = 0;
+bool connectedYay, firstRun, secondRun,justRanPix=false;
 const char INFRC[] = 
 "<!DOCTYPE HTML>"
 "<html>"
@@ -91,7 +91,7 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 unsigned long myChannelNumber = 404585;
 const char * myWriteAPIKey = "W124WS7UN76VCASZ";
 char alfaTempC[6]; float alfaTemp=0;char alfaHumidC[6]; float alfaHumid=0;
-int aTfield = 5;int aHfield=6;
+int kittField = 6;int aTfield=7;int aHfield = 8;
 
 void getTemperature() {
   sensors_event_t event;
@@ -119,6 +119,7 @@ Serial.println(" *C");
   //dtostrf(alfaHumid, 2, 2 , alfahumidS);
   ThingSpeak.setField(aTfield, alfaTemp);
   ThingSpeak.setField(aHfield, alfaHumid);
+  ThingSpeak.setField(kittField, watsdoin);
   ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
 }
 
@@ -308,7 +309,45 @@ void returnOK()
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.send(200, "text/plain", "OK\r\n");
 }
-
+void tryConn(){
+String hostname(HOST_NAME);
+  WiFi.hostname(hostname);
+  if (WiFi.getMode() != WIFI_STA)
+  {
+    WiFi.mode(WIFI_STA);
+    delay(10);
+  }
+ int n = WiFi.scanNetworks();
+ for (int i = 0; i < n; ++i){
+ String tryWi = WiFi.SSID(i);
+ if (tryWi == ssid) {
+//  WiFi.config(ip,gateway,subnet);
+ Serial.println("CONNECTED TO NTHRN INTERWEBS");
+ WiFi.begin(ssid, pass);
+ connectedYay=true;
+  } else if (tryWi == ssid2) {
+ Serial.println("CONNECTED TO ANDROIDAP");// WiFi.config(ip2,gateway2,subnet);
+ WiFi.begin(ssid2, pass2);
+ connectedYay=true;
+ } else if (tryWi == ssid3) {
+ Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
+ WiFi.begin(ssid3, pass3);
+ connectedYay=true;
+   }
+  else{
+    for (int t=0;t<20;t++){
+   delay(10);
+   Serial.print(".");
+    }
+  WiFi.mode(WIFI_AP);
+   WiFi.softAP(ssAPid, passAP);
+    IPAddress myIP = WiFi.softAPIP();
+  Serial.print("NO NETWORKS FOUND. COMMENCING AP MODE @");
+  Serial.println(myIP);
+ }
+}
+}
+  
 void handleNotFound(){
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -330,39 +369,7 @@ void setup(void) {
   stdDelaySec = 30;
   firstRun = true;
   watsdoin = 1;
-  String hostname(HOST_NAME);
-  WiFi.hostname(hostname);
-  if (WiFi.getMode() != WIFI_STA)
-  {
-    WiFi.mode(WIFI_STA);
-    delay(10);
-  }
- int n = WiFi.scanNetworks();
- for (int i = 0; i < n; ++i){
- String tryWi = WiFi.SSID(i);
- if (tryWi == ssid) {
-//  WiFi.config(ip,gateway,subnet);
- Serial.println("CONNECTED TO NTHRN INTERWEBS");
- WiFi.begin(ssid, pass);
-  } else if (tryWi == ssid2) {
- Serial.println("CONNECTED TO ANDROIDAP");// WiFi.config(ip2,gateway2,subnet);
- WiFi.begin(ssid2, pass2);
- } else if (tryWi == ssid3) {
- Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
- WiFi.begin(ssid3, pass3);
-   }
-  else{
-    for (int t=0;t<20;t++){
-   delay(10);
-   Serial.print("."):
-    }
-  WiFi.mode(WIFI_AP);
-   WiFi.softAP(ssAPid, passAP);
-    IPAddress myIP = WiFi.softAPIP();
-  Serial.print("NO NETWORKS FOUND. COMMENCING AP MODE @");
-  Serial.println(myIP);
- }
-}
+  tryConn();
  ArduinoOTA.setHostname("alfagt");
   ArduinoOTA.onStart([]() {
     String type;
@@ -414,12 +421,16 @@ void setup(void) {
 void loop(void) {
  ArduinoOTA.handle();
  theTime = millis();
- server.handleClient();
+ if ((!connectedYay)||((theTime-lastTry)>20000)){
+ lastTry=theTime;
+ tryConn();
+ }
+server.handleClient();
 if (firstRun) {
- firstRun = false;
+firstRun = false;
 kitt();
 }
- if (justRanPix){
+if (justRanPix){
     justRanPix=false;
     Serial.print("wats =");
     Serial.println(watsdoin);
