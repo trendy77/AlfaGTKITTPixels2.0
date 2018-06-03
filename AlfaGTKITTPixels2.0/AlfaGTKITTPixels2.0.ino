@@ -1,27 +1,31 @@
 /**
 * NEOPIXEL KITT BETA - PRODUCTION
-* v7.1 - espserver implementation
+* v7.3 - espserver implementation
 *  espSERVER
+* thinkspeak
 * **/
-
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
+#include <ThingSpeak.h>
 #include <ESP8266WiFi.h>
-#include <ArduinoOTA.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <WiFiUdp.h>
+#include <ArduinoOTA.h>
 
-MDNSResponder mdns;
+///#MDNSResponder mdns;
 ESP8266WebServer server(80);
 #define HOST_NAME "alfagt"
 #define PIN 4
 #define NUMPIXELS 16
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
 int delayval = 25;
-
 String colour = "red";
 String mode = "kitt";
 int theSpeed = 25;
@@ -36,43 +40,42 @@ const char ssid3[] = "AlfaRomeoGT";
 const char pass3[] = "turismoGT";
 const char ssid2[] = "AndroidAP";
 const char pass2[] = "tttttttt";
-const char *ssAPid = "AlfaRomeoKITTGT";
-const char *passAP = "turismo";
-/*IPAddress subnet(255, 255, 255, 0);
+const char *ssAPid = "AlfaRomeo";
+const char *passAP = "turismoGT";
+IPAddress subnet(255, 255, 255, 0);
 IPAddress gateway2(192,168,43,1);
-IPAddress ip(10, 0, 77, 34);
-IPAddress gateway(10,0,77,100);
+IPAddress ipN(10, 0, 77, 34);
+IPAddress gatewayN(10,0,77,100);
 IPAddress ip2(192, 168, 43, 34);
-*/
-long theTime, lastTime1 = 0;
-bool firstRun, secondRun,justRanPix, off = false;
-
-const char INDEX_HTML[] =
+WiFiClient client;
+long theTime, lastTime1,lastTime2 = 0;
+bool firstRun, secondRun,justRanPix=false;
+const char INFRC[] = 
 "<!DOCTYPE HTML>"
 "<html>"
 "<head>"
 "<meta name = \"viewport\" content = \"width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0\">"
 "<title>AlfaGT</title>"
 "<style>"
-"\"body { background-color: #808080; font-family: Arial, Helvetica, Sans-Serif; Color: #000000; }\""
+"body{background-image: url(\"http://car-logos.com/images/lsa/alfa-romeo-logo-png.jpg\");padding: 20px;font-family: Helvetica;)"
 "</style>"
 "</head>"
 "<body>"
 "<h1>AlfaGT Command</h1>"
-"<FORM action=\"/\" method=\"post\">"
+"<p><h3>STATS</h3>"
+"</p><br><FORM action=\"/\" method=\"post\">"
 "<P>"
 "Mode<br>"
 "<INPUT type=\"radio\" name=\"mode\" value=\"off\">Off<BR>"
 "<INPUT type=\"radio\" name=\"mode\" value=\"kitt\">KITT<BR>"
 "<INPUT type=\"radio\" name=\"mode\" value=\"cop\">CopMode<BR>"
+"<INPUT type=\"radio\" name=\"mode\" value=\"multi\">MultiColour<BR>"
 "<BR>Colour<BR>"
 "<INPUT type=\"radio\" name=\"mode\" value=\"yellow\">Yellow"
 "<INPUT type=\"radio\" name=\"mode\" value=\"blue\">Blue"
 "<INPUT type=\"radio\" name=\"mode\" value=\"green\">Green<BR>"
 "<INPUT type=\"submit\" value=\"Send\"> <INPUT type=\"reset\">"
-"</P>"
-"<P>"
-"Delay<br>"
+"</P><P><h3>Delay</h3><br>"
 "<INPUT type=\"radio\" name=\"delay\" value=\"10\">10<BR>"
 "<INPUT type=\"radio\" name=\"delay\" value=\"30\">30<BR>"
 "<INPUT type=\"radio\" name=\"delay\" value=\"60\">60<BR>"
@@ -82,9 +85,44 @@ const char INDEX_HTML[] =
 "</body>"
 "</html>";
 
-const int LEDPIN = BUILTIN_LED;
+#define DHTPIN     12    //// which is D6... or was it 14 (D5)?
+#define DHTTYPE           DHT11
+DHT_Unified dht(DHTPIN, DHTTYPE);
+unsigned long myChannelNumber = 404585;
+const char * myWriteAPIKey = "W124WS7UN76VCASZ";
+char alfaTempC[6]; float alfaTemp=0;char alfaHumidC[6]; float alfaHumid=0;
+int aTfield = 5;int aHfield=6;
 
- void knightRider(uint16_t cyc, uint16_t spd, uint16_t wid, uint32_t color) {
+void getTemperature() {
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println("Error reading temperature!");
+  }
+  else {
+    Serial.print("Temperature: ");
+    Serial.print(event.temperature);
+    alfaTemp = event.temperature;
+Serial.println(" *C");
+  }
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println("Error reading humidity!");
+  }
+  else {
+    //Serial.print("Humidity: ");
+    Serial.print(event.relative_humidity);
+    alfaHumid = event.relative_humidity;
+    Serial.println("%");
+  }
+  //dtostrf(alfaTemp, 2, 2 , alfaTempS);
+  //dtostrf(alfaHumid, 2, 2 , alfahumidS);
+  ThingSpeak.setField(aTfield, alfaTemp);
+  ThingSpeak.setField(aHfield, alfaHumid);
+  ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+}
+
+void knightRider(uint16_t cyc, uint16_t spd, uint16_t wid, uint32_t color) {
   uint32_t old_val[NUMPIXELS]; // up to 256 lights!
   for (int i = 0; i < cyc; i++) {
     for (int count = 1; count<NUMPIXELS; count++) {
@@ -136,7 +174,7 @@ uint32_t colorWheel(byte WheelPos) {
   default: return strip.Color(0, 0, 0); break;
   }
 }
-void kitt() {
+void kitt(){
   int t=30;
   knightRider(2, t, 4, 0xFF1000); // Cycles, Speed, Width, RGB Color (original orange-red)
   t=t-5;
@@ -156,10 +194,12 @@ void kitt() {
   clearStrip();
 }
 void copMode(){
+  int del = 20;
   for (int cy=1;cy<=5;cy++){
   // set to 5 cycles...
-  knightRider(1, 25, 4, 0xFF0000); // red
-  knightRider(1, 25, 4, 0x0000FF); // blue         
+  knightRider(1, del, 5, 0xFF0000); // red
+  knightRider(1, del, 5, 0x0000FF); // blue         
+  del=(del-2);
   }
 }
 void runThePix() {
@@ -192,6 +232,7 @@ void runThePix() {
   }
 }
 void handleRoot() {
+
   if (server.hasArg("mode")) {
     handleMode();
   }
@@ -199,7 +240,7 @@ void handleRoot() {
     handleDelay();
   }
   else {
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
   }
 }
 
@@ -217,23 +258,27 @@ void handleMode()
   LEDvalue = server.arg("mode");
   if (LEDvalue == "kitt") {
     watsdoin=1;
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
   }
   else if (LEDvalue == "cop") {
     watsdoin=4;
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
+  }
+  else if (LEDvalue == "multi") {
+    watsdoin=7;
+    server.send(200, "text/html", INFRC);
   }
   else if (LEDvalue == "blue") {
     watsdoin=8;
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
   }
   else if (LEDvalue == "yellow") {
     watsdoin=2;
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
   }
   else if (LEDvalue == "green") {
     watsdoin=5;
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
   }
 } 
 void handleDelay(){
@@ -242,15 +287,15 @@ void handleDelay(){
     LEDvalue = server.arg("delay");
   if (LEDvalue == "10") {
     stdDelaySec=10;
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
   }
   else if (LEDvalue == "30") {
     stdDelaySec=30;
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
   }
   else if (LEDvalue == "60") {
     stdDelaySec=60;
-    server.send(200, "text/html", INDEX_HTML);
+    server.send(200, "text/html", INFRC);
   }
   else {
     returnFail("Bad mode value");
@@ -287,13 +332,14 @@ void setup(void) {
   watsdoin = 1;
   String hostname(HOST_NAME);
   WiFi.hostname(hostname);
-  long fromNow=millis();
-  long waitin=0;
+  if (WiFi.getMode() != WIFI_STA)
+  {
+    WiFi.mode(WIFI_STA);
+    delay(10);
+  }
  int n = WiFi.scanNetworks();
  for (int i = 0; i < n; ++i){
  String tryWi = WiFi.SSID(i);
- //long timeZat = millis();
- //waitin=timeZat-fromNow;
  if (tryWi == ssid) {
 //  WiFi.config(ip,gateway,subnet);
  Serial.println("CONNECTED TO NTHRN INTERWEBS");
@@ -306,16 +352,16 @@ void setup(void) {
  WiFi.begin(ssid3, pass3);
    }
   else{
-  delay(1);
-  int t=1;
-  t++;
-  if(t>=15){
-    WiFi.softAP(ssAPid, passAP);
- IPAddress myIP = WiFi.softAPIP();
+    for (int t=0;t<20;t++){
+   delay(10);
+   Serial.print("."):
+    }
+  WiFi.mode(WIFI_AP);
+   WiFi.softAP(ssAPid, passAP);
+    IPAddress myIP = WiFi.softAPIP();
   Serial.print("NO NETWORKS FOUND. COMMENCING AP MODE @");
   Serial.println(myIP);
  }
-  }
 }
  ArduinoOTA.setHostname("alfagt");
   ArduinoOTA.onStart([]() {
@@ -341,22 +387,33 @@ void setup(void) {
     else if (error == OTA_END_ERROR) Serial.println("End Failed");
   });
   ArduinoOTA.begin();
-  delay(200);
+  delay(50);
   server.on("/", handleRoot);
   server.on("/mode", handleMode);
   server.on("/delay", handleDelay);
   server.onNotFound(handleNotFound);
   server.begin();
-  delay(200);
+  delay(50);
+     dht.begin();
+    sensor_t sensor; dht.temperature().getSensor(&sensor); Serial.println("------------------------------------"); Serial.println("Temperature");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version); Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" *C"); Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C"); Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C"); Serial.println("------------------------------------");
+    dht.humidity().getSensor(&sensor); Serial.println("------------------------------------");  Serial.println("Humidity");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id); Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  Serial.println("------------------------------------");
+    delay(500);
+    ThingSpeak.begin(client);
+//if (!MDNS.begin("alfagt")) {
+   // Serial.println("Error setting up MDNS responder!");
+ // }
+  //MDNS.addService("http", "tcp", 80);
+   delay(40);
   strip.begin();
   strip.show();
   Serial.print("Connect to http://alfagt.local or http://");
   Serial.println(String(WiFi.localIP()));
+  delay(40);
 }
 
 void loop(void) {
-  theTime = millis();
-  ArduinoOTA.handle();
+ ArduinoOTA.handle();
+ theTime = millis();
  server.handleClient();
 if (firstRun) {
  firstRun = false;
@@ -375,5 +432,9 @@ kitt();
     strip.clear();
     justRanPix=true;
   }
+if (theTime >= (lastTime2 + (30 * 1000))) {
+    lastTime2=theTime;
+    getTemperature();
+    }
  yield();
 }
