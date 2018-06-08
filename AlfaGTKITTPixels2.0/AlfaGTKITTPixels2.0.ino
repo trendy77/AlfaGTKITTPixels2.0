@@ -1,13 +1,18 @@
 /**
 * NEOPIXEL KITT BETA - PRODUCTION
-* v7.3 - espserver implementation
-*  espSERVER
+* v8 - espserver
+*  dht
 * thinkspeak
 * **/
 #include <Adafruit_NeoPixel.h>
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
+ 
+#include "index.h" 
+//#include "graph.h" 
+//#include "index2.h" 
+
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
@@ -18,7 +23,7 @@
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-
+  
 MDNSResponder mdns;
 ESP8266WebServer server(80);
 WiFiClient client;
@@ -49,79 +54,15 @@ IPAddress ipN(10, 0, 77, 34);
 IPAddress gatewayN(10,0,77,100);
 long theTime, lastTime1,lastTime2 = 0;
 bool firstRun, secondRun,justRanPix=false;
-const char INFRC[] = 
-"<!DOCTYPE HTML>"
-"<html>"
-"<head>"
-"<script src=\"https://trendypublishing.com.au/alfa.php\"></script><meta name = \"viewport\" content = \"width = device-width, initial-scale = 1.0, maximum-scale = 1.0, user-scalable=0\">"
-"<title>AlfaGT</title>"
-"<style src=\"https://trendypublishing.com.au/css/alfa.css\"></style>"
-"<script src=\"https://trendypublishing.com.au/alfa.js\"></script>"
-"</head>"
-"<body>"
-"<h1>AlfaGT Command</h1>"
-"<p><h3>STATS</h3>"
-"</p><br><FORM action=\"/\" method=\"post\">"
-"<P>"
-"Mode<br>"
-"<INPUT type=\"radio\" name=\"mode\" value=\"off\">Off<BR>"
-"<INPUT type=\"radio\" name=\"mode\" value=\"kitt\">KITT<BR>"
-"<INPUT type=\"radio\" name=\"mode\" value=\"cop\">CopMode<BR>"
-"<INPUT type=\"radio\" name=\"mode\" value=\"multi\">MultiColour<BR>"
-"<BR>Colour<BR>"
-"<INPUT type=\"radio\" name=\"mode\" value=\"yellow\">Yellow"
-"<INPUT type=\"radio\" name=\"mode\" value=\"blue\">Blue"
-"<INPUT type=\"radio\" name=\"mode\" value=\"green\">Green<BR>"
-"<INPUT type=\"submit\" value=\"Send\"> <INPUT type=\"reset\">"
-"</P><P><h3>Delay</h3><br>"
-"<INPUT type=\"radio\" name=\"delay\" value=\"10\">10<BR>"
-"<INPUT type=\"radio\" name=\"delay\" value=\"30\">30<BR>"
-"<INPUT type=\"radio\" name=\"delay\" value=\"60\">60<BR>"
-"<INPUT type=\"submit\" value=\"Send\"> <INPUT type=\"reset\">"
-"</P>"
-"</FORM>"
-"</body>"
-"</html>";
 
-#define DHTPIN     12    //// which is D6... or was it 14 (D5)?
+#define DHTPIN     0    //// which is D6... or was it 14 (D5)?
 #define DHTTYPE           DHT11
 DHT_Unified dht(DHTPIN, DHTTYPE);
-unsigned long myChannelNumber = 404585;
-const char * myWriteAPIKey = "W124WS7UN76VCASZ";
+//unsigned long myChannelNumber = 404585;  key-W124WS7UN76VCASZ
+unsigned long myChannelNumber = 511863;
+const char * myWriteAPIKey = "ZPH42LNUJXJHUW0O";
 char alfaTempC[6]; float alfaTemp=0;char alfaHumidC[6]; float alfaHumid=0;
-int kittField = 6;int aTfield=7;int aHfield = 8;
-
-void getTemperature() {
-  sensors_event_t event;
-  dht.temperature().getEvent(&event);
-  if (isnan(event.temperature)) {
-    Serial.println("Error reading temperature!");
-  }
-  else {
-    Serial.print("Temperature: ");
-    Serial.print(event.temperature);
-    alfaTemp = event.temperature;
-Serial.println(" *C");
-  }
-  dht.humidity().getEvent(&event);
-  if (isnan(event.relative_humidity)) {
-    Serial.println("Error reading humidity!");
-  }
-  else {
-    //Serial.print("Humidity: ");
-    Serial.print(event.relative_humidity);
-    alfaHumid = event.relative_humidity;
-    Serial.println("%");
-  }
-  //dtostrf(alfaTemp, 2, 2 , alfaTempS);
-  //dtostrf(alfaHumid, 2, 2 , alfahumidS);
-  ThingSpeak.setField(aTfield, alfaTemp);
-  ThingSpeak.setField(aHfield, alfaHumid);
-  ThingSpeak.setField(kittField, watsdoin);
-  ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
-  Serial.println("written to thingSpeak");
-  delay(200);
-}
+int delField=4;int kittField = 3;int aTfield=1;int aHfield = 2;
 
 void knightRider(uint16_t cyc, uint16_t spd, uint16_t wid, uint32_t color) {
   uint32_t old_val[NUMPIXELS]; // up to 256 lights!
@@ -233,15 +174,20 @@ void runThePix() {
   }
 }
 void handleRoot() {
-
   if (server.hasArg("mode")) {
-    handleMode();
+    handMode();
   }
-  if (server.hasArg("delay")) {
-    handleDelay();
+  if (server.hasArg("watsdoin")) {
+   Serial.print('hwd');
+   handWd();
+  }
+    if (server.hasArg("delay")) {
+    Serial.print('hdel');
+  handDelay();
   }
   else {
-    server.send(200, "text/html", INFRC);
+    String s = MAIN_page;
+    server.send(200, "text/html", s);
   }
 }
 
@@ -252,59 +198,91 @@ void returnFail(String msg)
   server.send(500, "text/plain", msg + "\r\n");
 }
 
-void handleMode()
+void handMode()
 {
-  String LEDvalue;
-  if (!server.hasArg("mode")) return returnFail("BAD ARGS");
-  LEDvalue = server.arg("mode");
+  Serial.print('hmofe');
+  if (!server.hasArg("mode")) server.send(200, "text/plain", mode);
+  String LEDvalue = server.arg("mode");
+  mode = LEDvalue;
   if (LEDvalue == "kitt") {
     watsdoin=1;
-    server.send(200, "text/html", INFRC);
+    mode="kittStd";
   }
-  else if (LEDvalue == "cop") {
-    watsdoin=4;
-    server.send(200, "text/html", INFRC);
-  }
-  else if (LEDvalue == "multi") {
+  if (LEDvalue == "multi") {
     watsdoin=7;
-    server.send(200, "text/html", INFRC);
+    mode="multi";
   }
-  else if (LEDvalue == "blue") {
+  if (LEDvalue == "cop") {
+    watsdoin=4;
+    mode="cop";
+  }
+  if (LEDvalue == "blue") {
     watsdoin=8;
-    server.send(200, "text/html", INFRC);
-  }
-  else if (LEDvalue == "yellow") {
+    }
+  if (LEDvalue == "yellow") {
     watsdoin=2;
-    server.send(200, "text/html", INFRC);
-  }
-  else if (LEDvalue == "green") {
+      }
+  if (LEDvalue == "green") {
     watsdoin=5;
-    server.send(200, "text/html", INFRC);
   }
-} 
-void handleDelay(){
-    String LEDvalue;
-    if (!server.hasArg("delay")) return returnFail("BAD ARGS");
-    LEDvalue = server.arg("delay");
-  if (LEDvalue == "10") {
-    stdDelaySec=10;
-    server.send(200, "text/html", INFRC);
-  }
-  else if (LEDvalue == "30") {
-    stdDelaySec=30;
-    server.send(200, "text/html", INFRC);
-  }
-  else if (LEDvalue == "60") {
-    stdDelaySec=60;
-    server.send(200, "text/html", INFRC);
-  }
-  else {
-    returnFail("Bad mode value");
-  }
+   server.send(200, "text/plain", mode);
 }
 
-void returnOK()
-{
+void handTemp() {
+ server.send(200, "text/plain", String(alfaTemp));
+}
+void handHumid() {
+ server.send(200, "text/plain", String(alfaHumid)); 
+}
+void handWd() {
+if (!server.hasArg("watsdoin")) server.send(200, "text/plain", String(watsdoin)); 
+String tt= server.arg("watsdoin");
+   watsdoin =tt.toInt();
+  server.send(200, "text/plain", String(watsdoin));
+}
+void handDelay(){
+    String LEDvalue;
+    if (!server.hasArg("delay")) server.send(200, "text/plain", String(stdDelaySec));
+    LEDvalue = server.arg("delay");
+    stdDelaySec=LEDvalue.toInt();
+    server.send(200, "text/plain", String(stdDelaySec));
+}
+
+void getTemperature() {
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.println("Error reading temperature!");
+  }
+  else {
+    Serial.print("Temperature: ");
+    Serial.print(event.temperature);
+    alfaTemp = event.temperature;
+Serial.println(" *C");
+  }
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.println("Error reading humidity!");
+  }
+  else {
+    //Serial.print("Humidity: ");
+    Serial.print(event.relative_humidity);
+    alfaHumid = event.relative_humidity;
+    Serial.println("%");
+  }
+  //dtostrf(alfaTemp, 2, 2 , alfaTempS);
+  //dtostrf(alfaHumid, 2, 2 , alfahumidS);
+  ThingSpeak.setField(aTfield, alfaTemp);
+  ThingSpeak.setField(aHfield, alfaHumid);
+  ThingSpeak.setField(kittField, watsdoin);
+  ThingSpeak.setField(delField,String(stdDelaySec));
+  ThingSpeak.setField(8,String(millis()));
+  ThingSpeak.writeFields(myChannelNumber, myWriteAPIKey);
+  Serial.println("written to thingSpeak");
+  delay(200);
+}
+
+void returnOK(){
   server.sendHeader("Connection", "close");
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.send(200, "text/plain", "OK\r\n");
@@ -331,25 +309,20 @@ void setup(void) {
   stdDelaySec = 30;
   firstRun = true;
   watsdoin = 1;
- 
-String hostname(HOST_NAME);
+ String hostname(HOST_NAME);
   WiFi.hostname(hostname);
-  if (WiFi.getMode() != WIFI_STA)
-  {
-    WiFi.mode(WIFI_STA);
-    delay(10);
-  }
  int n = WiFi.scanNetworks();
  for (int i = 0; i < n; ++i){
  String tryWi = WiFi.SSID(i);
- if (tryWi == ssid) {
-//  WiFi.config(ip,gateway,subnet);
- Serial.println("CONNECTED TO NTHRN INTERWEBS");
- WiFi.begin(ssid, pass);
-  } else if (tryWi == ssid2) {
+ if (tryWi == ssid2) {
  Serial.println("CONNECTED TO ANDROIDAP");// WiFi.config(ip2,gateway2,subnet);
  WiFi.begin(ssid2, pass2);
- } else if (tryWi == ssid3) {
+ } else if (tryWi == ssid) {
+//  WiFi.config(ip,gateway,subnet);
+ WiFi.begin(ssid, pass);
+ Serial.println("CONNECTED TO NTHRN INTERWEBS");
+  }
+   else if (tryWi == ssid3) {
  Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
  WiFi.begin(ssid3, pass3);
   }
@@ -379,12 +352,13 @@ String hostname(HOST_NAME);
   ArduinoOTA.begin();
   delay(50);
   server.on("/", handleRoot);
-  server.on("/mode", handleMode);
-  server.on("/delay", handleDelay);
+  server.on("/mode", handMode);
+  server.on("/delay", handDelay);
+  server.on("/watsdoin", handWd); server.on("/temp", handTemp); server.on("/humid", handHumid);
   server.onNotFound(handleNotFound);
   server.begin();
   delay(50);
-     dht.begin();
+    dht.begin();
     sensor_t sensor; dht.temperature().getSensor(&sensor); Serial.println("------------------------------------"); Serial.println("Temperature");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version); Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" *C"); Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C"); Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C"); Serial.println("------------------------------------");
     dht.humidity().getSensor(&sensor); Serial.println("------------------------------------");  Serial.println("Humidity");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id); Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  Serial.println("------------------------------------");
     delay(500);
@@ -425,7 +399,7 @@ if (justRanPix){
   }
 if (theTime >= (lastTime2 + (90 * 1000))) {
     lastTime2=theTime;
-    getTemperature();
+  getTemperature();
     }
  yield();
 }

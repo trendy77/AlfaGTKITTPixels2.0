@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel='shortcut icon' type='image/ico' href='http://www.alfaromeo.com/favicon.ico' />
+    <style>
+        .parallax {
+            background-image: url("http://cartype.com/pics/192/small/alfa_romeo_logo_2.jpg");
+            height: 500px;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        
+        .tit {
+            padding: 30px 30px;
+            width: 40% height: 40%;
+            background-color: rgba(65, 3, 39, 0.281);
+        }
+        
+        #form.main {
+            background-image: url('https://trendypublishing.com.au/css/arch.jpg');
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+            padding: none;
+        }
+        
+        #form.inverse {
+            background-image: url('http://cartype.com/pics/192/small/alfa_romeo_logo_2.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-position: center;
+            padding: none;
+        }
+    </style>
+    <title>AlfaGT Command</title>
+</head>
+
+<body>
+
+    <div class="parallax">
+        <div class="tit">
+            <h1 align="center">ALFAGT COMMAND</h1>
+            <img src="https://www.alfaromeousa.com/content/dam/alfausa/redesign/global/logo/alfa-romeo-logo-desktop-131x72-2.png"></img>
+        </div>
+    </div>
+
+    Temp Celcius is : <span id="alfaTemp" onload="loadDoc()">0</span> C<br> Relative Humidity is : <span id="alfaHumid" onload="loadDoc(, myFunction2)">NA</span> %<br> MODE : <span id="watsdoin" onload="loadDoc(watsdoin, myFunction1)">0</span><br> DELAY
+    : <span id="delay" onload="loadDoc(delay, myFunction2)">30</span>secs<br>
+
+    <div id="body">
+        <div id='form' class='inverse'>
+            <div id='form' class='main'>
+                <h3>MODE</h3>
+                <br>
+                <button type="button" onclick="sendData(1)">KITT MODE</button>
+                <button type="button" onclick="sendData(4)">COP MODE</button>
+                <button type="button" onclick="sendData(7)">MULTICOLOUR MODE</button>
+                <button type="button" onclick="sendData(0)">LIGHTS OFF</button>
+                <BR>
+                <button type="button" onclick="sendData(2)">Yellow</button>
+                <button type="button" onclick="sendData(5)">Blue</button>
+                <button type="button" onclick="sendData(8)">Green</button>
+                <BR>
+            </div>
+        </div>
+        <div id='form' class='inverse'>
+            <div id='form' class='main'>
+                <h3>DELAY</h3>
+                <br>
+                <button type="button" onclick="sendDaDelay(10)">10</button>
+                <button type="button" onclick="sendDaDelay(30)">30</button>
+                <button type="button" onclick="sendDaDelay(60)">60</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        loadDoc("watsdoin", myFunction1);
+        loadDoc("delay", myFunction2);
+        loadDoc("temp", myFunction3);
+        loadDoc("humid", myFunction4);
+
+        function loadDoc(url, cFunction) {
+            var xhttp;
+            xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    cFunction(this);
+                }
+            };
+            xhttp.open("GET", url, true);
+            xhttp.send();
+        }
+
+        function myFunction1(xhttp) {
+            document.getElementById("watsdoin").innerHTML =
+                this.responseText;
+        }
+
+        function myFunction2(xhttp) {
+            document.getElementById("delay").innerHTML =
+                this.responseText;
+        }
+
+        function myFunction3(xhttp) {
+            document.getElementById("alfaTemp").innerHTML =
+                this.responseText;
+        }
+
+        function myFunction4(xhttp) {
+            document.getElementById("alfaHumid").innerHTML =
+                this.responseText;
+        }
+
+        function sendData(theVar) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("watsdoin").innerHTML =
+                        this.responseText;
+                }
+            };
+            xhttp.open("GET", "data?watsdoin=" + theVar, true);
+            xhttp.send();
+        }
+
+        function sendDaDelay(theVar) {
+            var xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    document.getElementById("delay").innerHTML =
+                        this.responseText;
+                }
+            };
+            xhttp.open("GET", "data?delay=" + theVar, true);
+            xhttp.send();
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script>
+        $("form").hover(function() {
+                $(this).css("opacity";
+                    "1");
+            };
+
+            function() {
+                $(this).css("opacity";
+                    "0.5");
+            });
+    </script>
+    <br><br>
+</body>
+
+</html>

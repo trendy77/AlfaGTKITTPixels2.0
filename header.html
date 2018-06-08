@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AlfaGT Command</title>
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css" />
+	    <link href="https://trendypublishing.com.au/css/alfa.css" type="text/css" rel="stylesheet" media="all" />
+		<link rel="icon" href="http://www.alfaromeo.com/favicon.ico" type="image/x-icon" />
+		<link rel="shortcut icon" href="http://www.alfaromeo.com/favicon.ico" type="image/x-icon" />
+</head>
+<body>
+  <nav class="black" role="navigation">
+    <div class="maroon nav-wrapper container">
+      <img id="logo-container" src="https://www.alfaromeousa.com/content/dam/alfausa/redesign/global/logo/alfa-romeo-logo-desktop-131x72-2.png" class="brand-logo align-right"></img>
+      <ul class="right hide-on-med-and-down">
+        <li><a href="#delay">Delay</a></li>
+		<li><a href="#mode">Mode</a></li>
+		<li><a href="#stats">Stats</a></li>
+           </ul>
+	     <ul id="nav-mobile" class="sidenav">
+<li><button class="blue-grey darken-4-text" type="button" onclick="sendDelayD(10)">Set DELAY to 10</button></li>
+<li><button class="blue-grey darken-4-text" type="button" onclick="sendDataD(30)">Set DELAY to 30</button></li>
+<li><button class="blue-grey darken-4-text" type="button" onclick="sendDataD(60)">Set DELAY to 60</button></li>
+			<div class="row center">
+<li><button class="blue-grey darken-4" type="button" onclick="sendData(1)">KITT MODE</button></li>
+<li><button class="blue-grey darken-4" type="button" onclick="sendData(4)">COP MODE</button></li>
+<li><button class="blue-grey darken-4" type="button" onclick="sendData(7)">MULTICOLOUR MODE</button></li>
+<li><button class="blue-grey darken-4" type="button" onclick="sendData(0)">LIGHTS OFF</button></li>           
+		   </ul>		
+		</div>		
