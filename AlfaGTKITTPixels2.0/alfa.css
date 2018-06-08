@@ -1,0 +1,148 @@
+/* Custom Stylesheet */
+/**
+ * Use this file to override Materialize files so you can update
+ * the core Materialize files in the future
+ *
+ * Made By MaterializeCSS.com
+ */
+
+nav ul a,
+nav .brand-logo {
+  color: #01579b ;
+}
+
+p {
+  line-height: 2rem;
+}
+
+.sidenav-trigger {
+  color: #004d40 ;
+}
+
+.parallax-container {
+  min-height: 380px;
+  line-height: 0;
+  height: auto;
+  color: rgba(255,255,255,.9);
+}
+  .parallax-container .section {
+    width: 100%;
+  }
+
+@media only screen and (max-width : 992px) {
+  .parallax-container .section {
+    position: absolute;
+    top: 40%;
+  }
+  #index-banner .section {
+    top: 20%;
+  }
+}
+
+@media only screen and (max-width : 600px) {
+  #index-banner .section {
+    top: 0;
+  }
+}
+
+.icon-block {
+  padding: 0 15px;
+}
+.icon-block .material-icons {
+  font-size: inherit;
+}
+
+footer.page-footer {
+  margin: 0;
+}
+
+
+h{
+    font-family: Helvetica;
+  }
+  div{
+	  margin:10%;
+  }
+#body {
+   background-image:url('https://trendypublishing.com.au/css/ar.jpg'); 
+   background-repeat: no-repeat; background-attachment: fixed; background-position: center;
+   padding:none;
+  }
+  #revBody{
+	  background-image:url('http://cartype.com/pics/192/small/alfa_romeo_logo_2.jpg'); 
+   background-repeat: no-repeat; background-attachment: fixed; background-position: center;
+   padding:none;
+   width:100%;
+  }
+  #form {
+background-image: url('');  
+  background-repeat: no-repeat;
+  background-attachment: fixed; 
+  background-position: center; 
+  padding: 20px; 
+  font-size: 25px; 
+  text-align: center; 
+  transition: all 0.2s; 
+  margin: 0 auto; 
+  opacity:0.8; 
+  }
+  .header {
+    background-color:#212121 ;
+    color:white;
+    font-size: 20px;
+    margin-top: 10px; 
+    width: 50%; 
+    }
+  .inverse {
+      background-image: url('');
+      font-size: 30px;
+      margin-top: 10px; 
+      width: 80%; 
+      opacity:0.8;
+  }
+  .main {
+    background-color: darkgrey;
+    color : navy;
+    font-size: 30px;
+    margin-top: 20px; 
+    width: 100%; 
+    opacity:1
+	}  
+    
+  #form2 {
+	  float:centre;
+  background-color: red;
+  padding: 20px; 
+  font-size: 25px; 
+  text-align: center; 
+  transition: all 0.2s; 
+  margin: 0 auto; 
+  opacity:0.8; 
+   }
+    #arti{
+  font-size: 25px;font-family: Helvetica; color:#fff;
+      background-color:navy;
+	  float:center;
+      padding: 10px 10px;
+      width: 100%;opacity:0.8;
+  }
+#graph{
+    font-size: 25px;font-family: Helvetica; color:#fff;
+    background-color:brown;
+    padding: 10px 10px;
+    width: 100%;
+    opacity:1;
+  }
+#submit{
+      font-size: 25px;
+      color: red;
+      background-color:#fff;
+      padding: 20px 20px;
+      width: 50% 
+  }
+  
+ $("form").hover(function(){
+    $(this).css("opacity"; "1");
+    }; function(){
+    $(this).css("opacity"; "0.5");
+});
