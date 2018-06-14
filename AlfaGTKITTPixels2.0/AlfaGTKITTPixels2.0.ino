@@ -1,6 +1,6 @@
 /**
 * NEOPIXEL KITT BETA - PRODUCTION
-* v8 - espserver
+* v8a - espserver
 *  dht
 * thinkspeak
 * **/
@@ -8,11 +8,7 @@
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
- 
 #include "index.h" 
-//#include "graph.h" 
-//#include "index2.h" 
-
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
@@ -28,32 +24,30 @@ MDNSResponder mdns;
 ESP8266WebServer server(80);
 WiFiClient client;
 #define HOST_NAME "alfagt"
-#define PIN 4
-#define NUMPIXELS 16
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-int delayval = 25;
-String colour = "red";
-String mode = "kitt";
-int theSpeed = 25;
-int cycles = 5;
-int width = 4;
+#include "kittcmd.h"
+// experimental extra kitt functions...
+#include "kittset.h"
+
+//String colour = "red";String mode = "kitt";int theSpeed = 25;int cycles = 5;int width = 4;
 int stdDelaySec = 30;
 int watsdoin = 1;
-const char ssid[] = "Northern Frontier Interwebs";
-const char pass[] = "num4jkha8nnk"; 
-const char ssid3[] = "AlfaRomeoGT";
-const char pass3[] = "turismoGT";
+//const char ssid[] = "Northern Frontier Interwebs";
+//const char pass[] = "num4jkha8nnk"; 
+//IPAddress ipN(10, 0, 77, 34);
+//IPAddress gatewayN(10,0,77,100);
+//const char ssid3[] = "AlfaRomeoGT";
+//const char pass3[] = "turismoGT";
+
 const char ssid2[] = "AndroidAP";
 const char pass2[] = "tttttttt";
+//AP-STA
 const char *ssAPid = "AlfaRomeo";
 const char *passAP = "turismoGT";
 IPAddress subnet(255, 255, 255, 0);
 IPAddress gateway2(192,168,43,1);
 IPAddress ip2(192, 168, 43, 34);
-IPAddress ipN(10, 0, 77, 34);
-IPAddress gatewayN(10,0,77,100);
-long theTime, lastTime1,lastTime2 = 0;
-bool firstRun, secondRun,justRanPix=false;
+long theTime, lastTime1,lastTime2,lastTime3,lastTry,nextRun = 0;
+bool firstRun, secondRun,justRanPix,wifConnected=false;
 
 #define DHTPIN     0    //// which is D6... or was it 14 (D5)?
 #define DHTTYPE           DHT11
@@ -61,89 +55,9 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 //unsigned long myChannelNumber = 404585;  key-W124WS7UN76VCASZ
 unsigned long myChannelNumber = 511863;
 const char * myWriteAPIKey = "ZPH42LNUJXJHUW0O";
-char alfaTempC[6]; float alfaTemp=0;char alfaHumidC[6]; float alfaHumid=0;
+char alfaTempC[6]; float alfaTemp=10;char alfaHumidC[6]; float alfaHumid=10;
 int delField=4;int kittField = 3;int aTfield=1;int aHfield = 2;
 
-void knightRider(uint16_t cyc, uint16_t spd, uint16_t wid, uint32_t color) {
-  uint32_t old_val[NUMPIXELS]; // up to 256 lights!
-  for (int i = 0; i < cyc; i++) {
-    for (int count = 1; count<NUMPIXELS; count++) {
-      strip.setPixelColor(count, color);
-      old_val[count] = color;
-      for (int x = count; x>0; x--) {
-        old_val[x - 1] = dimColor(old_val[x - 1], wid);
-        strip.setPixelColor(x - 1, old_val[x - 1]);
-      }
-      strip.show();
-      delay(spd);
-    }
-    for (int count = NUMPIXELS - 1; count >= 0; count--) {
-      strip.setPixelColor(count, color);
-      old_val[count] = color;
-      for (int x = count; x <= NUMPIXELS; x++) {
-        old_val[x - 1] = dimColor(old_val[x - 1], width);
-        strip.setPixelColor(x + 1, old_val[x + 1]);
-      }
-      strip.show();
-      delay(spd);
-    }
-  }
-  clearStrip();
-}
-void clearStrip() {
-  for (int i = 0; i<NUMPIXELS; i++) {
-    strip.setPixelColor(i, 0x000000); strip.show();
-  }
-}
-uint32_t dimColor(uint32_t color, uint16_t wid) {
-  return (((color & 0xFF0000) / wid) & 0xFF0000) + (((color & 0x00FF00) / wid) & 0x00FF00) + (((color & 0x0000FF) / wid) & 0x0000FF);
-}
-uint32_t colorWheel(byte WheelPos) {
-  byte state = WheelPos / 21;
-  switch (state) {
-  case 0: return strip.Color(255, 0, 255 - ((((WheelPos % 21) + 1) * 6) + 127)); break;
-  case 1: return strip.Color(255, ((WheelPos % 21) + 1) * 6, 0); break;
-  case 2: return strip.Color(255, (((WheelPos % 21) + 1) * 6) + 127, 0); break;
-  case 3: return strip.Color(255 - (((WheelPos % 21) + 1) * 6), 255, 0); break;
-  case 4: return strip.Color(255 - (((WheelPos % 21) + 1) * 6) + 127, 255, 0); break;
-  case 5: return strip.Color(0, 255, ((WheelPos % 21) + 1) * 6); break;
-  case 6: return strip.Color(0, 255, (((WheelPos % 21) + 1) * 6) + 127); break;
-  case 7: return strip.Color(0, 255 - (((WheelPos % 21) + 1) * 6), 255); break;
-  case 8: return strip.Color(0, 255 - ((((WheelPos % 21) + 1) * 6) + 127), 255); break;
-  case 9: return strip.Color(((WheelPos % 21) + 1) * 6, 0, 255); break;
-  case 10: return strip.Color((((WheelPos % 21) + 1) * 6) + 127, 0, 255); break;
-  case 11: return strip.Color(255, 0, 255 - (((WheelPos % 21) + 1) * 6)); break;
-  default: return strip.Color(0, 0, 0); break;
-  }
-}
-void kitt(){
-  int t=30;
-  knightRider(2, t, 4, 0xFF1000); // Cycles, Speed, Width, RGB Color (original orange-red)
-  t=t-5;
-  knightRider(2, t, 3, 0xFF00FF); // Cycles, Speed, Width, RGB Color (purple)
-  t=t-5;
-  knightRider(2, t, 2, 0x0000FF); // Cycles, Speed, Width, RGB Color (blue)
-  t=t-5;
-  knightRider(2, t, 5, 0xFF0000); // Cycles, Speed, Width, RGB Color (red)
-  t=t-5;
-  knightRider(2, t, 4, 0x00FF00); // Cycles, Speed, Width, RGB Color (green)
-  t=t+5;
-  knightRider(2, t, 4, 0xFFFF00); // Cycles, Speed, Width, RGB Color (yellow)
-  t=t+5;
-  knightRider(2, t, 4, 0x00FFFF); // Cycles, Speed, Width, RGB Color (cyan)
-  t=t+5;
-  knightRider(2, t, 2, 0xFFFFFF); // Cycles, Speed, Width, RGB Color (white)
-  clearStrip();
-}
-void copMode(){
-  int del = 20;
-  for (int cy=1;cy<=5;cy++){
-  // set to 5 cycles...
-  knightRider(1, del, 5, 0xFF0000); // red
-  knightRider(1, del, 5, 0x0000FF); // blue         
-  del=(del-2);
-  }
-}
 void runThePix() {
   Serial.println("runnin pix");
   if (watsdoin==0) {
@@ -174,60 +88,29 @@ void runThePix() {
   }
 }
 void handleRoot() {
-  if (server.hasArg("mode")) {
-    handMode();
+  if (server.hasArg("nextrun")) {
+    handNext();
+  }
+    if (server.hasArg("temp")) {
+    handTemp();
+  }
+    if (server.hasArg("humid")) {
+    handHumid();
   }
   if (server.hasArg("watsdoin")) {
-   Serial.print('hwd');
-   handWd();
+    handWd();
   }
     if (server.hasArg("delay")) {
-    Serial.print('hdel');
-  handDelay();
+   handDelay();
   }
   else {
     String s = MAIN_page;
     server.send(200, "text/html", s);
   }
 }
-
-void returnFail(String msg)
-{
-  server.sendHeader("Connection", "close");
-  server.sendHeader("Access-Control-Allow-Origin", "*");
-  server.send(500, "text/plain", msg + "\r\n");
+void handNext(){
+server.send(200, "text/plain", String(nextRun));
 }
-
-void handMode()
-{
-  Serial.print('hmofe');
-  if (!server.hasArg("mode")) server.send(200, "text/plain", mode);
-  String LEDvalue = server.arg("mode");
-  mode = LEDvalue;
-  if (LEDvalue == "kitt") {
-    watsdoin=1;
-    mode="kittStd";
-  }
-  if (LEDvalue == "multi") {
-    watsdoin=7;
-    mode="multi";
-  }
-  if (LEDvalue == "cop") {
-    watsdoin=4;
-    mode="cop";
-  }
-  if (LEDvalue == "blue") {
-    watsdoin=8;
-    }
-  if (LEDvalue == "yellow") {
-    watsdoin=2;
-      }
-  if (LEDvalue == "green") {
-    watsdoin=5;
-  }
-   server.send(200, "text/plain", mode);
-}
-
 void handTemp() {
  server.send(200, "text/plain", String(alfaTemp));
 }
@@ -237,17 +120,42 @@ void handHumid() {
 void handWd() {
 if (!server.hasArg("watsdoin")) server.send(200, "text/plain", String(watsdoin)); 
 String tt= server.arg("watsdoin");
-   watsdoin =tt.toInt();
+watsdoin =tt.toInt();
   server.send(200, "text/plain", String(watsdoin));
 }
 void handDelay(){
     String LEDvalue;
-    if (!server.hasArg("delay")) server.send(200, "text/plain", String(stdDelaySec));
     LEDvalue = server.arg("delay");
     stdDelaySec=LEDvalue.toInt();
     server.send(200, "text/plain", String(stdDelaySec));
 }
-
+void handleReset(){
+  delay(1000);
+    ESP.restart();
+}
+void tryToConnect(){
+int n = WiFi.scanNetworks();
+for (int i = 0; i < n; ++i){
+String tryWi = WiFi.SSID(i);
+if (tryWi == ssid2) {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid2, pass2);
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+delay(500);
+}
+}
+}
+}
+/**
+ } else if (tryWi == ssid) {
+ WiFi.config(ip,gateway,subnet);
+ WiFi.begin(ssid, pass);
+ Serial.println("CONNECTED TO NTHRN INTERWEBS");
+  }
+   else if (tryWi == ssid3) {
+ Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
+ WiFi.begin(ssid3, pass3);
+**/
 void getTemperature() {
   sensors_event_t event;
   dht.temperature().getEvent(&event);
@@ -281,13 +189,6 @@ Serial.println(" *C");
   Serial.println("written to thingSpeak");
   delay(200);
 }
-
-void returnOK(){
-  server.sendHeader("Connection", "close");
-  server.sendHeader("Access-Control-Allow-Origin", "*");
-  server.send(200, "text/plain", "OK\r\n");
-}
-
 void handleNotFound(){
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -309,24 +210,18 @@ void setup(void) {
   stdDelaySec = 30;
   firstRun = true;
   watsdoin = 1;
- String hostname(HOST_NAME);
+ String htname="alfagt.local";
+ String hostname(htname);
   WiFi.hostname(hostname);
- int n = WiFi.scanNetworks();
- for (int i = 0; i < n; ++i){
- String tryWi = WiFi.SSID(i);
- if (tryWi == ssid2) {
- Serial.println("CONNECTED TO ANDROIDAP");// WiFi.config(ip2,gateway2,subnet);
- WiFi.begin(ssid2, pass2);
- } else if (tryWi == ssid) {
-//  WiFi.config(ip,gateway,subnet);
- WiFi.begin(ssid, pass);
- Serial.println("CONNECTED TO NTHRN INTERWEBS");
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid2, pass2);
+  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
+    Serial.println("Connection Failed!");
+    delay(5000);
+    //ESP.restart();
   }
-   else if (tryWi == ssid3) {
- Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
- WiFi.begin(ssid3, pass3);
-  }
- ArduinoOTA.setHostname("alfagt");
+ delay(500);
+  ArduinoOTA.setHostname("alfagt");
   ArduinoOTA.onStart([]() {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH)
@@ -352,45 +247,55 @@ void setup(void) {
   ArduinoOTA.begin();
   delay(50);
   server.on("/", handleRoot);
-  server.on("/mode", handMode);
+  server.on("/reset", handleReset);
+  server.on("/nextrun", handNext);
   server.on("/delay", handDelay);
-  server.on("/watsdoin", handWd); server.on("/temp", handTemp); server.on("/humid", handHumid);
+  server.on("/watsdoin", handWd); 
+  server.on("/temp", handTemp);
+  server.on("/humid", handHumid);
   server.onNotFound(handleNotFound);
   server.begin();
   delay(50);
-    dht.begin();
-    sensor_t sensor; dht.temperature().getSensor(&sensor); Serial.println("------------------------------------"); Serial.println("Temperature");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version); Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" *C"); Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C"); Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C"); Serial.println("------------------------------------");
-    dht.humidity().getSensor(&sensor); Serial.println("------------------------------------");  Serial.println("Humidity");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id); Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  Serial.println("------------------------------------");
-    delay(500);
-    ThingSpeak.begin(client);
 if (!MDNS.begin("alfagt")) {
    Serial.println("Error setting up MDNS responder!");
   }
   MDNS.addService("http", "tcp", 80);
-   delay(40);
+  delay(40);
   strip.begin();
   strip.show();
-  Serial.print("Connected");
+    delay(200);  
+    dht.begin();
+    sensor_t sensor; dht.temperature().getSensor(&sensor); Serial.println("------------------------------------"); Serial.println("Temperature");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version); Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" *C"); Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C"); Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C"); Serial.println("------------------------------------");
+    dht.humidity().getSensor(&sensor); Serial.println("------------------------------------");  Serial.println("Humidity");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id); Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  Serial.println("------------------------------------");
+    delay(200);
+    ThingSpeak.begin(client);
   Serial.println(String(WiFi.localIP()));
   delay(40);
 }
-}
 
 void loop(void) {
- ArduinoOTA.handle();
- theTime = millis();
+theTime = millis();
+ArduinoOTA.handle();
 server.handleClient();
 if (firstRun) {
 firstRun = false;
 kitt();
 }
-if (justRanPix){
-    justRanPix=false;
-    Serial.print("wats=");
-    Serial.println(watsdoin);
-    Serial.println("mode =");
-    Serial.println(mode);
-   }
+if (WiFi.status() != WL_CONNECTED){
+   Serial.println("ntConn?");
+   if (theTime >= (lastTry + 60000)) {
+    lastTry=theTime;
+    tryToConnect();
+    }
+ }
+if (theTime >= (lastTime3 + 5000)) {       ///justRanPix){
+lastTime3=theTime;
+nextRun = (theTime -(lastTime1 + (stdDelaySec * 1000)));  
+Serial.print("wats=");Serial.println(watsdoin);
+    Serial.print("del="); Serial.println(stdDelaySec);
+    Serial.print("nextrun in");  Serial.println(nextRun);
+///    justRanPix=false;
+    }
  if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
     lastTime1=theTime;
     runThePix();

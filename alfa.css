@@ -1,56 +1,40 @@
 h{
-    font-family: Helvetica;
-  }
-  #body {
-   background-image:url('http://www.omniauto.it/awpImages/photogallery/2015/22601/photos1280/alfa-romeo-storia-logo-1907-2016__18.jpg'); background-repeat: no-repeat; background-attachment: fixed; background-position: center; opacity: 0.5;
-}
-#zeeeyes{
+    font-family: Helvetica;color: red  }
+  p{color: white }
+#body{
     background-image:url('http://4.bp.blogspot.com/-9YLLXboMOY8/ULYblJySkpI/AAAAAAAAEVA/7mQIS59JtxA/s1600/Alfa+Romeo+Logo+4.jpeg');
-}
+background-repeat: no-repeat; 
+   background-attachment: fixed; 
+   background-position: center; 
+   
+	}
   #form {
+   background-image:url('http://www.omniauto.it/awpImages/photogallery/2015/22601/photos1280/alfa-romeo-storia-logo-1907-2016__18.jpg'); 
+   background-repeat: no-repeat; 
+   background-attachment: fixed; 
+   background-position: center; 
+   opacity: 0.5;
+  }
+  #form.inv {
   background-image: url('http://cdn.johnywheels.com/2016/03/02/alfaromeologoblackandwhite-l-ab8414f94741721d.jpg');  
-  background-repeat: no-repeat;
-  background-attachment: fixed; 
-  background-position: center; 
   padding: 20px; 
   font-size: 25px; 
   text-align: center; 
-  transition: all 0.2s; 
-  margin: 0 auto; 
   opacity:0.5; 
-  width: 300px
   }
-  #form.inverse {
+  #form.dev {
       background-image: url('https://i.pinimg.com/736x/5e/22/b6/5e22b67da60525879ea09b0960e12a2f.jpg');
-      background-repeat: "no-repeat"; background-attachment: "fixed"; background-position: center; font-size: 30px;
-      margin-top: 40px; width: 100%; opacity:1
+   opacity:1
   }
-  
-  #formb {
+  #form.b {
     background-color: #fff;
-    background-repeat: no-repeat; background-attachment: fixed; background-position: center; font-size: 30px;
     margin-top: 40px; width: 100%; opacity:1
 }
-  $("form").hover(function(){
-      $(this).css("opacity"; "1");
-      }; function(){
-      $(this).css("opacity"; "0.5");
-  });
-     
-  #arti{
-  font-size: 25px;font-family: Helvetica; color:#fff;
-      background-color:#ff0000;
-      padding: 30px 30px;
-      width: 100%;opacity:0.8;
-      &:hover {
-          background-color : #000; color : #fff;font-size: 30px; width: 90%; opacity:1;
-        }   
-  }
-   #submit{
+ #submit{
       font-size: 25px;
       color: #80000;
       background-color:#fff;
       padding: 20px 20px;
       width: 50% 
   }
-  
+ 
