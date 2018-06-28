@@ -1,6 +1,6 @@
 /**
 * NEOPIXEL KITT BETA - PRODUCTION
-* v8a - espserver
+* v8abb - perfectionistBRANCH
 *  dht
 * thinkspeak
 * **/
@@ -8,7 +8,7 @@
 #ifdef __AVR__
 #include <avr/power.h>
 #endif
-#include "index.h" 
+#include "index.h"
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
 #include <DHT_U.h>
@@ -26,7 +26,6 @@ WiFiClient client;
 #define HOST_NAME "alfagt"
 #include "kittcmd.h"
 // experimental extra kitt functions...
-#include "kittset.h"
 
 //String colour = "red";String mode = "kitt";int theSpeed = 25;int cycles = 5;int width = 4;
 int stdDelaySec = 30;
