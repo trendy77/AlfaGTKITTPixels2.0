@@ -1,41 +1,75 @@
 <html>
-<html xmlns='http://www.w3.org/1999/xhtml'>
+<html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-<link rel='shortcut icon' type='image/ico' href='http://www.alfaromeo.com/favicon.ico'>
-<link rel='stylesheet' type='text/css' href='https://trendypublishing.com.au/css/alfa.css'>
-<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-		 <title>AlfaGT Command</title>
-        </head>
-        <body id='body'>
-            <h1 align="center">ALFAGT COMMAND</h1>
-                <form action='/' method='post'>
-            <div id='form'>
-                     <div id='form'>
-                         <div id='formB' style='color=black,background-color=#000;'>
-						  <div id='submit'>
-						  <h2>MODE</h2>
-                           <input type='radio' name='mode' value='off'>Off</input>
-                       <input type='radio' name='mode' value='kitt'>KITT</input>
-                  <input type='radio' name='mode' value='cop'>CopMode</input>
-              <input type='radio' name='mode' value='multi'>MultiColour</input>
-<br>
-            <input type='radio' name='mode' value='yellow'>Yellow</input>
-          <input type='radio' name='mode' value='blue'>Blue</input>
-  <input type='radio' name='mode' value='green'>Green</input>       <br>               
-                            <input type='submit' value='Send'></input>
-                            </div>
+<link rel="shortcut icon" type="image/ico" href="http://www.alfaromeo.com/favicon.ico">
+<link rel="stylesheet" type="text/css" href="https://trendypublishing.com.au/css/alfa.css">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>AlfaGT Command</title>
+  <!-- CSS  -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.100.2/css/materialize.min.css" />
+	    <link href="https://trendypublishing.com.au/css/alfa.css" type="text/css" rel="stylesheet" media="all" />
+		<link rel="icon" href="http://www.alfaromeo.com/favicon.ico" type="image/x-icon" />
+		<link rel="shortcut icon" href="http://www.alfaromeo.com/favicon.ico" type="image/x-icon" />
+
+</head>
+<body>
+  <nav class="black" role="navigation">
+    <div class="nav-wrapper container">
+	<div style="color:grey;">
+	      <img id="logo-container" src="https://www.alfaromeousa.com/content/dam/alfausa/redesign/global/logo/alfa-romeo-logo-desktop-131x72-2.png" class="brand-logo grey align-right"></img>
+</div>	
+	<ul id="nav-mobile" class="sidenav right">
+	 <li><button class="blue-grey darken-4-text" type="button" onclick="sendDataD(0)">Set CONSTANT MODE</button></li>
+<li><button class="blue-grey darken-4-text" type="button" onclick="sendDelayD(10)">Set DELAY to 10</button></li>
+<li><button class="blue-grey darken-4-text" type="button" onclick="sendDataD(30)">Set DELAY to 30</button></li>
+<li><button class="blue-grey darken-4-text" type="button" onclick="sendDataD(60)">Set DELAY to 60</button></li>
+		   </ul>		
+		</div>		
+</nav>		
+        <body id="body">
+		<div style="background-color:grey;">
+            <h1 align="center">GT COMMAND</h1>
+			<div class="w3-row w3-center"><p>Temp Celcius : <span id="temp" onload="gtemp()">0</span> C<br>Relative Humidity: <span id="humid" onload="ghumid()">NA</span> %</p></div>
+	
+	<div id="form">
+                     <div id="form">
+                         <div id="formB" style="color=black,background-color=#000;">
+						  <div id="submit">
+						  
+						  
+
+<div class="w3-row">
+		<div class="w3-quarter w3-container w3-dark-grey w3-left">
+		<h6>MODE @ <span id="watsdoin">NA</span></h6><br><br>
+		<h3 style="color:red;">MODE SELECT</h3><button type="button" class="w3-button w3-mobile" onclick="wd(1)">KITT MODE</button><br><button type="button" class="w3-button w3-mobile" onclick="wd(4)">COP MODE</button><br><button type="button" class="w3-button w3-mobile" onclick="wd(7)">MULTICOLOUR</button><br><button type="button" class="w3-button w3-mobile" onclick="wd(0)">LIGHTS OFF</button><br></div>
+		<div class="w3-quarter w3-container"></div>
+		</div>
+</div>
+    
+
+
+
+						  </div>
                         </div>
                     </div>
                 </div>
-            <div id='title'>
-                <div id='form'>
-                    <div id='title'>
-                    <div id='submit'>
-					<h2>DELAY INTERVAL</h2>
-                        <input type='radio' name='delay' value='10'>10secs</input>
-                        <input type='radio' name='delay' value='30'>30secs</input>
-                        <input type='radio' name='delay' value='60'>60secs</input><br>
-                    <input type='submit' value='Send'></input>
+            <div id="title">
+                <div id="form">
+                    <div id="title">
+                    <div id="submit">
+
+
+
+
+
+
+
+
 					</div>
                     </div>
                  </div>
