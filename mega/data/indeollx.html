@@ -1,0 +1,35 @@
+<!DOCTYPE html><html charset="UTF-8"><head><meta name="viewport" /><link href="css/style.css" rel="stylesheet" /><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script><title>AlfaGT Command</title><link href="http://www.alfaromeo.com/favicon.ico" rel="icon" type="image/x-icon" /><link href="http://www.alfaromeo.com/favicon.ico" rel="shortcut icon" type="image/x-icon" /></head>
+<body>
+<div class="bkgd" id="outerbk">
+    <div class="bkgd" id="form">
+        <div id="top">
+                <div id="logo"></div>
+                <div id="header"><h1>AlfaGT COMMAND</h1></div>
+        </div>
+        </div>
+    <div>
+    <div class ="buttonpanel"id="delay">
+        <a alt="off" class="button" href="#" id="deloff" onclick="wd(0)"><img src="img/OFF.png"></a><br><a alt="10" class="button" id="del10"href="#" onclick="del(0)"><img src="img/0.png"></a><br><a alt="10" class="button" href="#" onclick="del(10)"><img src="img/10.png"></a><br><a alt="30" class="button" href="#" id="del30" onclick="del(30)"><img src="img/30.png"></a><br><a alt="60" class="button" href="#" onclick="del(60)" id="del60"><img src="img/60.png"></a>
+        </div>
+    <div id="mpanel">
+     <div id="pani"></div>
+    <div id="pstats">
+    <h3>DELAY: <span id="delay"></span> secs</h3><br />
+    <h3>MODE: <span id="watsdoin"></span> %</h3><br />
+    <h3>TEMP: <span id="delay"></span> C</h3><br />
+    </div>
+        </div>
+    <div class ="buttonpanel"id="mpanel">
+<div class="dropdown"><button class="dropbtn"><a class="mbutton" id="theatre" href="#"><img src="img/THEATRE.png"></a></button><div class="dropdown-content"><a href="#" onclick="wd(10)">TheatreChase</a> <a href="#" onclick="wd(11)">theatreChaseRainbow</a> <a href="#" onclick="wd(10)">TheatreChase</a> <a href="#" onclick="wd(12)">theatreChaseRainbow</a></div></div>
+<div class="dropdown"><button class="dropbtn"><a class="mbutton" id="cop" href="#"><img src="img/COPMODE.png"></a></button><div class="dropdown-content"><a href="#" onclick="wd(4)">COPMODE</a> <a href="#" onclick="wd(14)">COPMODE-WIPE</a></div></div>
+<div class="dropdown"><button class="dropbtn"><a class="mbutton" id="rainbow" href="#"><img src="img/RAINBOW.png"></a></button><div class="dropdown-content"><a href="#" onclick="wd(16)">rainbow2White</a> <a href="#" onclick="wd(17)">PulseWhite</a> <a href="#" onclick="wd(19)">WhiteOverRainbow</a><a href="#" onclick="wd(12)">colourWipe1</a><a href="#" onclick="wd(18)">colourWipeBlue</a></div>
+<div class="dropdown"><button class="dropbtn"><a class="mbutton" id="kitt" href="#"><img src="img/KITT.png"></a></button><div class="dropdown-content"><a href="#" onclick="wd(10)">TheatreChase</a> <a href="#" onclick="wd(11)">theatreChaseRainbow</a> <a href="#" onclick="wd(10)">TheatreChase</a> <a href="#" onclick="wd(12)">theatreChaseRainbow</a></div></div>
+        </div>
+      </div>
+
+<div class="panel" id="pright"><div class="dropdown"><button class="dropbtn"><a class="rgbutton" href="#"><img src="img/NORMAL.png"></a></button><div class="dropdown-content"><h3>COLOUR SELECT</h3><button onclick="r(255)" type="button">SET Red</button> <button onclick="g(255)" type="button">SET Green</button> <button onclick="b(255)" type="button">SET Blue</button></div></div>
+</div>
+</div></div>
+</body>
+</html>
+

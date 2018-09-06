@@ -1,11 +1,13 @@
 /**
-* NEOPIXEL KITT BETA2 - PRODUCTION
+* NEOPIXEL KITT CMD
 **/
+#ifndef Adafruit_NeoPixel
 #include <Adafruit_NeoPixel.h>
+#endif
+
 #define PIN 4
 #define NUMPIXELS 16
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);
-int delayval = 25;
 
 ///// HELPERS
 uint32_t rgb2hex(byte r,byte b,byte g){
@@ -13,7 +15,6 @@ char hex[7] = {0};
 uint32_t hexS= sprintf(hex,"%02X%02X%02X",r,g,b);
 return hexS;
 }
-
 uint8_t red(uint32_t c) {
   return (c >> 8);
 }
@@ -23,6 +24,7 @@ uint8_t green(uint32_t c) {
 uint8_t blue(uint32_t c) {
   return (c);
 }
+
 // Input a value 0 to 255 to get a color value.  The colours are a transition r - g - b - back to r.
 uint32_t Wheel(byte WheelPos) {
   WheelPos = 255 - WheelPos;
@@ -95,7 +97,6 @@ void knightRider(uint16_t cyc, uint16_t spd, uint16_t wid, uint32_t color) {
       delay(spd);
     }
   }
-server.handleClient();
  clearStrip();
 }
 
@@ -112,7 +113,6 @@ void theaterChase(uint32_t c, uint8_t wait) {
 		  strip.setPixelColor(i+q, c);    //turn every third pixel on
       }
       strip.show();
-	  server.handleClient();
       delay(wait);
       for (int i=0; i < strip.numPixels(); i=i+3) {
         strip.setPixelColor(i+q, 0);        //turn every third pixel off
@@ -127,7 +127,6 @@ void theaterChaseRainbow(uint8_t wait) {
         strip.setPixelColor(i+q, Wheel( (i+j) % 255));    //turn every third pixel on
       }
       strip.show();
-	  server.handleClient();
       delay(wait);
       for (int i=0; i < strip.numPixels(); i=i+3) {
         strip.setPixelColor(i+q, 0);        //turn every third pixel off
@@ -296,7 +295,6 @@ void rainbowBetter(uint8_t wait) {
 }
 
 //////////////compilations
-
 void oldLoop() {
   rainbow();
   clearStrip();
@@ -308,16 +306,20 @@ void oldLoop() {
 void chaseMe(uint8_t wait){
  uint16_t i, j;
  for(j=0; j<256; j++) {
- theaterChase(Wheel((i+j) & 255),wait);
-    }
+	theaterChase(Wheel((i+j) & 255),wait);
+   }
 }
 
-void newLoop() {
-  whiteOverRainbow(200,75,3);  
-  pulseWhite(1000);
-  rainbowBetter(30); 
-  rainbowFade2White(200,5,2);
-  fullWhite();
-  clearStrip();
-  kitt();
+void first() {
+	whiteOverRainbow(20, 75, 3);
+	pulseWhite(100);
+	rainbowBetter(30);
+	}
+void then1() {
+	rainbowFade2White(20, 5, 2);
 }
+  
+  void then2() {
+	  kitt();
+	}
+

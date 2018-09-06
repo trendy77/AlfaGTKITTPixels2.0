@@ -19,36 +19,35 @@
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
-  
+#include <ESP8266Ping.h>
+
+const IPAddress remote_ip(74,125,224,72);
+bool noInt=true;
 MDNSResponder mdns;
 ESP8266WebServer server(80);
 WiFiClient client;
-#define HOST_NAME "alfagt"
+#define HOST_NAME "alfagtttt"
 #include "kittcmd.h"
-// experimental extra kitt functions...
 
-//String colour = "red";String mode = "kitt";int theSpeed = 25;int cycles = 5;int width = 4;
-int stdDelaySec = 30;
+
+byte r,g,b=0;
+int stdDelaySec = 10;
 int watsdoin = 1;
-//const char ssid[] = "Northern Frontier Interwebs";
-//const char pass[] = "num4jkha8nnk"; 
-//IPAddress ipN(10, 0, 77, 34);
-//IPAddress gatewayN(10,0,77,100);
-//const char ssid3[] = "AlfaRomeoGT";
-//const char pass3[] = "turismoGT";
-
+const char ssid3[] = "AlfaRomeoGT";
+const char pass3[] = "turismoGT";
 const char ssid2[] = "AndroidAP";
 const char pass2[] = "tttttttt";
-//AP-STA
+const char ssid[] = "TPG 15EA";
+const char pass[] = "abcd1989";
 const char *ssAPid = "AlfaRomeo";
 const char *passAP = "turismoGT";
 IPAddress subnet(255, 255, 255, 0);
 IPAddress gateway2(192,168,43,1);
 IPAddress ip2(192, 168, 43, 34);
 long theTime, lastTime1,lastTime2,lastTime3,lastTry,nextRun = 0;
-bool firstRun, secondRun,justRanPix,wifConnected=false;
+bool firstRun, secondRun,justRanPix,connd,rolling=false;
 
-#define DHTPIN     0    //// which is D6... or was it 14 (D5)?
+#define DHTPIN     12    //// which is D6... or was it 14 (D5)?
 #define DHTTYPE           DHT11
 DHT_Unified dht(DHTPIN, DHTTYPE);
 //unsigned long myChannelNumber = 404585;  key-W124WS7UN76VCASZ
@@ -57,56 +56,7 @@ const char * myWriteAPIKey = "ZPH42LNUJXJHUW0O";
 char alfaTempC[6]; float alfaTemp=10;char alfaHumidC[6]; float alfaHumid=10;
 int delField=4;int kittField = 3;int aTfield=1;int aHfield = 2;
 
-void runThePix() {
-  Serial.println("runnin pix");
-  if (watsdoin==0) {
-   Serial.println("off");
-  } 
-  else if (watsdoin==1) {
-    knightRider(1, 18, 3, 0xFF1000); // (original orange-red)
-    knightRider(1, 20, 3, 0xFF1000); // (original orange-red)
-    knightRider(1, 22, 3, 0xFF1000); // (original orange-red)
-    knightRider(1, 25, 4, 0xFF1000); // (original orange-red)
-    knightRider(1, 30, 3, 0xFF1000); // (original orange-red)
-    knightRider(1, 35, 3, 0xFF1000); // (original orange-red)
-  }
-  else if (watsdoin==7){
-    kitt();     
-    } 
-  else if (watsdoin==4){
-    copMode();
-    } 
-  else if (watsdoin==2){
-    knightRider(5, 25, 3, 0xFFFF00);        // yellow
-  }
-  else if (watsdoin==5){
-      knightRider(5, 25, 3, 0x00FF00);      // green
-  } 
-  else if (watsdoin==8){
-    knightRider(5, 25, 3, 0x0000FF);      // blue         
-  }
-}
-void handleRoot() {
-  if (server.hasArg("nextrun")) {
-    handNext();
-  }
-    if (server.hasArg("temp")) {
-    handTemp();
-  }
-    if (server.hasArg("humid")) {
-    handHumid();
-  }
-  if (server.hasArg("watsdoin")) {
-    handWd();
-  }
-    if (server.hasArg("delay")) {
-   handDelay();
-  }
-  else {
-    String s = MAIN_page;
-    server.send(200, "text/html", s);
-  }
-}
+
 void handNext(){
 server.send(200, "text/plain", String(nextRun));
 }
@@ -120,41 +70,73 @@ void handWd() {
 if (!server.hasArg("watsdoin")) server.send(200, "text/plain", String(watsdoin)); 
 String tt= server.arg("watsdoin");
 watsdoin =tt.toInt();
-  server.send(200, "text/plain", String(watsdoin));
+  server.send(200, "text/plain", tt);
 }
 void handDelay(){
-    String LEDvalue;
-    LEDvalue = server.arg("delay");
+  if (!server.hasArg("delay")) server.send(200, "text/plain", String(stdDelaySec)); 
+    String LEDvalue = server.arg("delay");
     stdDelaySec=LEDvalue.toInt();
     server.send(200, "text/plain", String(stdDelaySec));
 }
-void handleReset(){
-  delay(1000);
-    ESP.restart();
+void handlergb(){
+String rr="";
+if (server.hasArg("r")) {
+rr =server.arg("r");
+r = rr.toInt(); 
 }
-void tryToConnect(){
-int n = WiFi.scanNetworks();
-for (int i = 0; i < n; ++i){
-String tryWi = WiFi.SSID(i);
-if (tryWi == ssid2) {
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid2, pass2);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-delay(500);
+if (server.hasArg("b")) {
+rr =server.arg("b");
+b=rr.toInt();
 }
+if (server.hasArg("g")) {
+rr=server.arg("g");
+g=rr.toInt();
 }
+String tt= "r="+String(r)+"&g="+String(g)+"&b="+String(b);
+server.send(200, "text/plain", tt);
 }
+
+
+void handRoll(){
+if (!server.hasArg("rolling")) server.send(200, "text/plain", String(rolling)); 
+    String value = server.arg("rolling");
+    rolling=value.toInt();
+    server.send(200, "text/plain", String(rolling));
 }
-/**
- } else if (tryWi == ssid) {
- WiFi.config(ip,gateway,subnet);
- WiFi.begin(ssid, pass);
- Serial.println("CONNECTED TO NTHRN INTERWEBS");
+
+void handleRoot() {
+  if (server.hasArg("nextrun")) {
+    handNext();
   }
-   else if (tryWi == ssid3) {
- Serial.println("CONNECTED TO ALFAWIFI"); //WiFi.config(ip2,gateway2,subnet);
- WiFi.begin(ssid3, pass3);
-**/
+    if (server.hasArg("temp")) {
+    handTemp();
+  }
+    if (server.hasArg("humid")) {
+    handHumid();
+  }
+  if (server.hasArg("r") || server.hasArg("g") || server.hasArg("b")) {
+    handlergb();
+  }
+    if (server.hasArg("rolling")) {
+    handRoll();
+  }
+  if (server.hasArg("watsdoin")) {
+    handWd();
+  }
+    if (server.hasArg("delay")) {
+   handDelay();
+  }
+  else {
+  if (noInt){
+    String s = NOINT_page;
+    server.send(200, "text/html", s);
+  } else {
+   String s = MAIN_page;
+    server.send(200, "text/html", s);
+  }
+}
+}
+
 void getTemperature() {
   sensors_event_t event;
   dht.temperature().getEvent(&event);
@@ -188,6 +170,35 @@ Serial.println(" *C");
   Serial.println("written to thingSpeak");
   delay(200);
 }
+bool tryToConnect(const char ssidd[],const char passd[])
+{
+   Serial.println("Connecting Wifi...");
+   WiFi.begin(ssidd, passd);
+    for (int t=0;t<10;t++){
+  while (WiFi.status()  != WL_CONNECTED) {  
+  	delay(20);
+	} 
+     Serial.print("CONN TRY SUCCESS - ");Serial.println(ssidd);
+bool gotInt= Ping.ping(remote_ip);
+delay(1500);
+if (gotInt){
+Serial.println("SUCCESS in pinging google.com");
+noInt=true;
+  } else {
+    Serial.println("Error :(");
+	Serial.println("Cant connect to google");
+	noInt=false;
+  }
+	return true;
+  }
+  Serial.print("CONN TRY FAILED - ");
+ Serial.println(ssidd);
+ WiFi.softAP(ssAPid, passAP);
+ delay(1000);
+return false; 
+}
+
+
 void handleNotFound(){
   String message = "File Not Found\n\n";
   message += "URI: ";
@@ -203,24 +214,98 @@ void handleNotFound(){
   server.send(404, "text/plain", message);
 }
 
-void setup(void) {
+void runThePix() {
+  Serial.println("runnin pix");
+  if (watsdoin==0) {
+   Serial.println("off");
+  }   
+  else if (watsdoin==1) {
+    knightRider(5, 35, 3, 0xFF1000); // (original orange-red)
+  }
+  else if (watsdoin==2){
+  uint32_t col = rgb2hex(r,g,b);
+  knightRider(5, 25, 3, col); 
+  }
+  else if (watsdoin==3){
+  oldLoop();
+  }
+    else if (watsdoin==4){
+    copMode();
+    } 
+	
+	
+	else if (watsdoin==6){
+ newLoop();
+  }	
+    else if (watsdoin==7){
+    rainbow();     
+    } 
+	
+	
+	else if (watsdoin==9){
+   chaseMe(150);
+  }	
+  else if (watsdoin == 10)
+  {
+    theaterChase(255, 10);
+  }
+  else if (watsdoin == 11)
+  {
+    theaterChaseRainbow(150);
+  }
+   else if (watsdoin == 12)
+  {
+pulseWhite(450);  
+  }
+  else if (watsdoin == 13)
+ {
+rainbowFade2White(10,5,2);
+ }
+   else if (watsdoin == 14)
+  {
+   copMode2();
+  }
+   else if (watsdoin == 15)
+  {
+  whiteOverRainbow(25,75,8);
+  }
+  if(rolling){
+  watsdoin++;
+if (watsdoin==16) {
+watsdoin=1;
+Serial.println("back to WD 1");
+}
+}
+ Serial.println("done pix");
+ }
+
+
+void setup(void)
+{
+pinMode(BUILTIN_LED, OUTPUT);
+  strip.begin();
+  strip.show();
+  colorWipe(150,5);   
   Serial.begin(115200);
   Serial.println("STARTING");
-  stdDelaySec = 30;
+  stdDelaySec = 10;
   firstRun = true;
   watsdoin = 1;
- String htname="alfagt.local";
- String hostname(htname);
+  rolling=false;
+  String htname = "alfagt.local";
+  String hostname(htname);
   WiFi.hostname(hostname);
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid2, pass2);
-  while (WiFi.waitForConnectResult() != WL_CONNECTED) {
-    Serial.println("Connection Failed!");
-    delay(5000);
-    //ESP.restart();
+  Serial.println("Connecting Wifi...");
+ 
+  connd=tryToConnect(ssid3, pass3);
+  delay(50);
+  if(!connd)
+  {
+  connd=tryToConnect(ssid2, pass2); 
+  delay(50); 
   }
- delay(500);
-  ArduinoOTA.setHostname("alfagt");
+  
+ArduinoOTA.setHostname("alfagt");
   ArduinoOTA.onStart([]() {
     String type;
     if (ArduinoOTA.getCommand() == U_FLASH)
@@ -237,40 +322,73 @@ void setup(void) {
   });
   ArduinoOTA.onError([](ota_error_t error) {
     Serial.printf("Error[%u]: ", error);
-    if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-    else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-    else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-    else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-    else if (error == OTA_END_ERROR) Serial.println("End Failed");
+    if (error == OTA_AUTH_ERROR)
+      Serial.println("Auth Failed");
+    else if (error == OTA_BEGIN_ERROR)
+      Serial.println("Begin Failed");
+    else if (error == OTA_CONNECT_ERROR)
+      Serial.println("Connect Failed");
+    else if (error == OTA_RECEIVE_ERROR)
+      Serial.println("Receive Failed");
+    else if (error == OTA_END_ERROR)
+      Serial.println("End Failed");
   });
-  ArduinoOTA.begin();
-  delay(50);
-  server.on("/", handleRoot);
-  server.on("/reset", handleReset);
+server.on("/r", handlergb);
+server.on("/b", handlergb);
+server.on("/g", handlergb);
+server.on("/", handleRoot);
+  server.on("/rolling", handRoll);
   server.on("/nextrun", handNext);
   server.on("/delay", handDelay);
-  server.on("/watsdoin", handWd); 
+  server.on("/watsdoin", handWd);
   server.on("/temp", handTemp);
   server.on("/humid", handHumid);
   server.onNotFound(handleNotFound);
   server.begin();
-  delay(50);
-if (!MDNS.begin("alfagt")) {
-   Serial.println("Error setting up MDNS responder!");
-  }
-  MDNS.addService("http", "tcp", 80);
-  delay(40);
-  strip.begin();
-  strip.show();
-    delay(200);  
-    dht.begin();
-    sensor_t sensor; dht.temperature().getSensor(&sensor); Serial.println("------------------------------------"); Serial.println("Temperature");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version); Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id);  Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println(" *C"); Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println(" *C"); Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println(" *C"); Serial.println("------------------------------------");
-    dht.humidity().getSensor(&sensor); Serial.println("------------------------------------");  Serial.println("Humidity");  Serial.print  ("Sensor:       "); Serial.println(sensor.name);  Serial.print  ("Driver Ver:   "); Serial.println(sensor.version);  Serial.print  ("Unique ID:    "); Serial.println(sensor.sensor_id); Serial.print  ("Max Value:    "); Serial.print(sensor.max_value); Serial.println("%");  Serial.print  ("Min Value:    "); Serial.print(sensor.min_value); Serial.println("%");  Serial.print  ("Resolution:   "); Serial.print(sensor.resolution); Serial.println("%");  Serial.println("------------------------------------");
-    delay(200);
-    ThingSpeak.begin(client);
-  Serial.println(String(WiFi.localIP()));
-  delay(40);
+  ArduinoOTA.begin();
+  if (MDNS.begin("alfagt"))
+  {
+    Serial.println("MDNS responder online");
+    MDNS.addService("http", "tcp", 80);
 }
+
+  dht.begin();
+  sensor_t sensor;
+  dht.temperature().getSensor(&sensor);
+  Serial.println("Temperature");
+  Serial.print("Sensor:       ");
+  Serial.println(sensor.name);
+  Serial.print("Driver Ver:   ");
+  Serial.println(sensor.version);
+  Serial.print("Unique ID:    ");
+  Serial.println(sensor.sensor_id);
+  Serial.print("Max Value:    ");
+  Serial.print(sensor.max_value);
+  Serial.println(" *C");
+  Serial.print("Min Value:    ");
+  Serial.print(sensor.min_value);
+  Serial.println(" *C");
+  Serial.print("Resolution:   ");
+  Serial.print(sensor.resolution);
+  Serial.println(" *C");
+  dht.humidity().getSensor(&sensor);
+  Serial.println("Humidity");
+  Serial.print("Sensor:     ");
+  Serial.println(sensor.name);
+  Serial.print("Driver Ver:   ");
+  Serial.println(sensor.version);
+  Serial.print("Unique ID:    ");
+  Serial.println(sensor.sensor_id);
+  Serial.print("Max Value:    ");
+  Serial.print(sensor.max_value);
+  Serial.print("Min Value:    ");
+  Serial.print(sensor.min_value);
+  Serial.print("Resolution:   ");
+  Serial.print(sensor.resolution);
+  delay(100);
+  ThingSpeak.begin(client);
+}
+
 
 void loop(void) {
 theTime = millis();
@@ -281,23 +399,26 @@ firstRun = false;
 kitt();
 }
 if (WiFi.status() != WL_CONNECTED){
-   Serial.println("ntConn?");
    if (theTime >= (lastTry + 60000)) {
-    lastTry=theTime;
-    tryToConnect();
-    }
+   lastTry=theTime;
+  connd = tryToConnect(ssid3, pass3);
+  delay(1750);
+   if(!connd)
+  {
+ connd=tryToConnect(ssid2, pass2); 
+   delay(1750);
+   if(!connd)
+  {
+  connd=tryToConnect(ssid, pass); 
+  delay(1750);
  }
-if (theTime >= (lastTime3 + 5000)) {       ///justRanPix){
-lastTime3=theTime;
-nextRun = (theTime -(lastTime1 + (stdDelaySec * 1000)));  
-Serial.print("wats=");Serial.println(watsdoin);
-    Serial.print("del="); Serial.println(stdDelaySec);
-    Serial.print("nextrun in");  Serial.println(nextRun);
-///    justRanPix=false;
-    }
+ }
+ }
+ }
+
  if (theTime >= (lastTime1 + (stdDelaySec * 1000))) {
-    lastTime1=theTime;
     runThePix();
+    lastTime1=theTime;
     strip.clear();
     justRanPix=true;
   }

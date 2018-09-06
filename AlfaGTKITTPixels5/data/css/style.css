@@ -1,0 +1,162 @@
+h {
+    font-family: Helvetica;
+    color: red;
+}
+div {
+    padding: 0%;
+    background-color: black;
+}
+body {
+    background-color: black;
+}
+
+/* #theId -- "id=theId" */
+/* .theClass  */
+
+/* BACKGROUNDS */
+.bkgd {
+    background-repeat: no-repeat;
+    background-position: center; 
+    background-attachment: fixed;
+    background-position: center top;
+    opacity:0.5;
+}
+#top {
+    background-position: center; 
+}
+#outerbk {
+    background-image: url('http://4.bp.blogspot.com/-9YLLXboMOY8/ULYblJySkpI/AAAAAAAAEVA/7mQIS59JtxA/s1600/Alfa+Romeo+Logo+4.jpeg');
+}
+#form {
+    background-image: url('http://www.omniauto.it/awpImages/photogallery/2015/22601/photos1280/alfa-romeo-storia-logo-1907-2016__18.jpg');
+}
+
+/* PANELS */
+
+#mpanel {
+      float: right !important;
+    padding: 0%;
+    opacity: 0.5;
+    display: block;
+}
+#pani{
+    background-image: url("img/ANI.gif");
+    align-content:center;
+}
+
+#pstats {
+    background-color: gray;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    padding: 0%;
+    opacity: 0.9;
+}
+
+#logo {
+        padding: 20px;
+        background-image:url("https://www.alfaromeousa.com/content/dam/alfausa/redesign/global/logo/alfa-romeo-logo-desktop-131x72-2.png");
+        float: left;
+}
+#header {
+        padding: 20px;
+     background-color: black;
+        float: right;
+}
+
+
+/* BUTTONS */
+.mbutton {
+    padding: 20px;
+    display: inline;
+    opacity: 0.8;
+    display: block;
+
+}
+
+.button {
+    padding: 20px;
+    display: inline;
+    opacity: 0.8;
+    display: block;
+
+}
+.dropbtn {
+    text-align: center;
+    opacity: 0.5;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+}
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+.dropdown-content {
+    display: none;
+    position: absolute;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+
+.mbutton:hover {
+   opacity: 1;
+}
+.button:hover {
+   opacity: 1;
+}
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+    opacity: 1;
+}
+/* Chrome, Safari, Opera */
+@-webkit-keyframes rainbow {
+    from {
+        background-color: purple;
+        border-color: green;
+    }
+    to {
+        background-color: red;
+        border-color: yellow;
+    }
+}
+@-webkit-keyframes copmove {
+    from {
+        background-color: blue;
+        border-color: red;
+    }
+    to {
+        background-color: red;
+        border-color: blue;
+    }
+}
+/* Standard syntax */
+@keyframes rainbow {
+    from {
+        background-color: purple;
+        border-color: green;
+    }
+    to {
+        background-color: red;
+        border-color: yellow;
+    }
+}
+@keyframes copmove {
+    from {
+        border-color: red;
+    }
+    to {
+        border-color: blue;
+    }
+}

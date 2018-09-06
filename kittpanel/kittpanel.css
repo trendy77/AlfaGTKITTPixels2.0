@@ -1,0 +1,275 @@
+h {
+    font-family: Helvetica;
+    color: red;
+}
+
+p {
+    color: white;
+}
+
+body {
+    background-color: black;
+}
+
+
+/* #something -- "id=something" */
+
+#kittpanel {
+    background-image: url('./back.gif');
+    padding: 0%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    opacity: 0.9;
+}
+
+#pstats {}
+
+#title {
+    background-color: darkcyan;
+}
+
+#logo {
+    background-image: url('./.gif');
+    padding: 0%;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    opacity: 0.9;
+}
+
+#pleft {
+    float: left !important;
+    padding: 0%;
+    opacity: 0.6;
+}
+
+#pright {
+    float: right !important;
+    padding: 0%;
+    opacity: 0.6;
+    display: block;
+}
+
+#pright button:hover {
+    opacity: 1;
+}
+
+#pcentre {
+    background-color: gray;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    padding: 0%;
+    opacity: 0.9;
+}
+
+#pani {
+    background-color: gray;
+    padding: 20%;
+    opacity: 0.9;
+}
+
+#outerbk {
+    background-image: url('http://4.bp.blogspot.com/-9YLLXboMOY8/ULYblJySkpI/AAAAAAAAEVA/7mQIS59JtxA/s1600/Alfa+Romeo+Logo+4.jpeg');
+    background-repeat: no-repeat;
+}
+
+#form {
+    background-image: url('http://www.omniauto.it/awpImages/photogallery/2015/22601/photos1280/alfa-romeo-storia-logo-1907-2016__18.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+    opacity: 0.7;
+}
+
+#form.inv {
+    background-image: url('http://cdn.johnywheels.com/2016/03/02/alfaromeologoblackandwhite-l-ab8414f94741721d.jpg');
+    padding: 20px;
+    font-size: 25px;
+    text-align: center;
+    opacity: 0.8;
+}
+
+#form.dev {
+    background-image: url('https://i.pinimg.com/736x/5e/22/b6/5e22b67da60525879ea09b0960e12a2f.jpg');
+    opacity: 1;
+}
+
+#backimg {
+    background-image: url('http://4.bp.blogspot.com/-9YLLXboMOY8/ULYblJySkpI/AAAAAAAAEVA/7mQIS59JtxA/s1600/Alfa+Romeo+Logo+4.jpeg');
+}
+
+#pright {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#modebtn {
+    border-style: none;
+}
+
+#modebtn.cop {
+    -webkit-animation: copmove 2s infinite;
+    animation: copmove 2s infinite;
+}
+
+#modebtn.rain {
+    -webkit-animation: rainbow 5s infinite;
+    animation: rainbow 5s infinite;
+}
+
+#panel {
+    display: inline-block;
+}
+
+
+/* .something -- "class=something" */
+
+.inv {
+    background-image: url('http://cdn.johnywheels.com/2016/03/02/alfaromeologoblackandwhite-l-ab8414f94741721d.jpg');
+    padding: 20px;
+    font-size: 25px;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.dev {
+    background-image: url('https://i.pinimg.com/736x/5e/22/b6/5e22b67da60525879ea09b0960e12a2f.jpg');
+    opacity: 1;
+}
+
+.dropdown {
+    align: center;
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown-content a:hover {
+    opacity: 1;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    display: block;
+}
+
+
+/* Chrome, Safari, Opera */
+
+@-webkit-keyframes rainbow {
+    from {
+        background-color: purple;
+        border-color: green;
+    }
+    to {
+        background-color: red;
+        border-color: yellow;
+    }
+}
+
+@-webkit-keyframes copmove {
+    from {
+        background-color: blue;
+        border-color: red;
+    }
+    to {
+        background-color: red;
+        border-color: blue;
+    }
+}
+
+
+/* Standard syntax */
+
+@keyframes rainbow {
+    from {
+        background-color: purple;
+        border-color: green;
+    }
+    to {
+        background-color: red;
+        border-color: yellow;
+    }
+}
+
+@keyframes copmove {
+    from {
+        background-color: blue;
+        border-color: red;
+    }
+    to {
+        background-color: red;
+        border-color: blue;
+    }
+}
+
+.dropbtn {
+    text-align: center;
+    opacity: 5;
+    padding: 16px;
+    font-size: 16px;
+    border: none;
+}
+
+.dropdown {
+    align: center;
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #3e8e41;
+}
+
+#logo {
+    background-color: azure;
+}
+
+#panimate {
+    background-image: "ANI.gif";
+    padding: 0%;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.9;
+}

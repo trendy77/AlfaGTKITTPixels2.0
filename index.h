@@ -183,16 +183,65 @@ body{ background-image:url('http://4.bp.blogspot.com/-9YLLXboMOY8/ULYblJySkpI/AA
 #form.dev {      background-image: url('https://i.pinimg.com/736x/5e/22/b6/5e22b67da60525879ea09b0960e12a2f.jpg');
    opacity:1;  }
 
+body{background-image:url('http://4.bp.blogspot.com/-9YLLXboMOY8/ULYblJySkpI/AAAAAAAAEVA/7mQIS59JtxA/s1600/Alfa+Romeo+Logo+4.jpeg');background-repeat: no-repeat;background-position: center; background-attachment: fixed;}
+/* #something -- "id=something" */
+#form { background-image:url('http://www.omniauto.it/awpImages/photogallery/2015/22601/photos1280/alfa-romeo-storia-logo-1907-2016__18.jpg');
+	background-repeat: no-repeat;background-attachment: fixed; background-position: center; opacity: 0.7;
+}
+#onoff {
+
+}
+#copmodebtn {
+    border-style: solid;
+    border-color: red;
+    background-color: blue;
+    -webkit-animation: copmove 2s infinite;
+    animation: copmove 2s infinite;
+}
+#rainbowbtn {
+    border-style: solid;
+    border-color: green;
+    background-color: purple;
+    -webkit-animation: rainbow 5s infinite;
+    animation: rainbow 5s infinite;
+}
+#theatrebtn {
+
+}
+/* .something -- "class=something" */
+.inv {background-image: url('http://cdn.johnywheels.com/2016/03/02/alfaromeologoblackandwhite-l-ab8414f94741721d.jpg'); padding: 20px; font-size: 25px; text-align: center; opacity:0.8;}  
+.dev {background-image: url('https://i.pinimg.com/736x/5e/22/b6/5e22b67da60525879ea09b0960e12a2f.jpg');opacity:1;}
 .dropdown {    align:center;	position: relative;    display: inline-block;}
 .dropdown-content {    display: none;    position: absolute;    background-color: #f1f1f1;    min-width: 160px;
     box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);    z-index: 1;}
 .dropdown-content a {    color: black;    padding: 12px 16px;    text-decoration: none;    display: block;}.dropdown-content a:hover {background-color: #ddd;}.dropdown:hover .dropdown-content {display: block;}
+.dropbtn {text-align:center;padding:10px; background-color: #3e8e41;} 
+.dropdown-content a { color: black;    padding: 12px 16px;    text-decoration: none; display: block;}
 .dropdown:hover 
-.dropbtn {background-color: #3e8e41;} 
 
+
+/* Chrome, Safari, Opera */
+@-webkit-keyframes rainbow {
+    from {background-color: purple;border-color: green;}
+    to {background-color: red;border-color: yellow;}
+}
+@-webkit-keyframes copmove {
+    from {background-color: blue;border-color: red;}
+    to {background-color: red;border-color: blue;}
+}
+
+/* Standard syntax */
+@keyframes rainbow {
+  from {background-color: purple;border-color: green;}
+    to {background-color: red;border-color: yellow;}
+}
+@keyframes copmove {
+   from {background-color: blue;border-color: red;}
+    to {background-color: red;border-color: blue;}
+}
 </style>
 </head>
-<body style="background-color:black;">
+<body>
 <div class="w3-row w3-teal"><div class="w3-quarter">
 <img id="logo-container" src="https://www.alfaromeousa.com/content/dam/alfausa/redesign/global/logo/alfa-romeo-logo-desktop-131x72-2.png" class="white brand-logo"></img>
 </div><div class="w3-half" style="text-align:center">
@@ -355,16 +404,6 @@ this.responseText;
 xhttp.open("GET", "humid", true);
 xhttp.send();
 }
-function gnext() {
-var xhttp = new XMLHttpRequest();
-xhttp.onreadystatechange = function() {
-if (this.readyState == 4 && this.status == 200) {
-document.getElementById("nextrun").innerHTML =
-this.responseText;
-}};
-xhttp.open("GET", "nextrun", true);
-xhttp.send();
-}
 function gde() {
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
@@ -387,13 +426,8 @@ xhttp.send();
 }
 setInterval(function() {
 ghumid();
-},15000);
-setInterval(function() {
-gnext();
-},2000);
-setInterval(function() {
 gtemp();
-}, 15000);
+},15000);
 
 <br><br>
 </body>

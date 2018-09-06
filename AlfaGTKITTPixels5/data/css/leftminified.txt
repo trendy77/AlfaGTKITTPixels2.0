@@ -1,0 +1,2 @@
+// left
+<div class="panel" id="pleft"><div class="buttonpanel" id="delay"><a alt="off" class="delaybutton" href="#" onclick="wd(0)"><img src="OFF.png"></a><br><a alt="0" class="delaybutton" href="#" onclick="del(0)"><img src="0.png"></a><br><a alt="10" class="delaybutton" href="#" onclick="del(10)"><img src="10.png"></a><br><a alt="30" class="delaybutton" href="#" onclick="del(30)"><img src="30.png"></a><br><a alt="60" class="delaybutton" href="#" onclick="del(60)"><img src="60.png"></a></div></div>
